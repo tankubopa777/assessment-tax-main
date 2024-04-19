@@ -23,53 +23,40 @@ func (r *PostgresTaxRepository) CalculateTax(input models.TaxCalculationInput) (
         {LowerBound: 2000001, UpperBound: -1, Rate: 0.35}, // -1 indicates no upper limit
     }
 
-    var totalDeductions float64 = 60000 // ค่าลดหย่อนส่วนตัวเริ่มต้น
+    // Calculate total deductions
+    var totalDeductions float64 = 60000 // Standard personal deduction
     var donationDeduction float64 = 0
     var kReceiptDeduction float64 = 0
 
-    // Calculate total deductions
     for _, allowance := range input.Allowances {
         if allowance.AllowanceType == "donation" {
             donationDeduction += allowance.Amount
             if donationDeduction > 100000 {
-                donationDeduction = 100000 
+                donationDeduction = 100000
             }
         } else if allowance.AllowanceType == "k-receipt" {
             kReceiptDeduction += allowance.Amount
             if kReceiptDeduction > 50000 {
                 kReceiptDeduction = 50000
             }
-        } else {
-            totalDeductions += allowance.Amount
         }
     }
     totalDeductions += donationDeduction + kReceiptDeduction
 
     taxableIncome := input.TotalIncome - totalDeductions
-
-    result := models.TaxCalculationResult{
-        TaxLevel: make([]models.TaxBracket, 0),
-    }
-
     taxBeforeWHT := 0.0
     remainingIncome := taxableIncome
 
+    // Calculating tax without storing tax levels
     for _, bracket := range taxBrackets {
         if remainingIncome > float64(bracket.LowerBound) {
             incomeInBracket := remainingIncome
             if bracket.UpperBound != -1 && remainingIncome > float64(bracket.UpperBound) {
-                incomeInBracket = float64(bracket.UpperBound - bracket.LowerBound)
+                incomeInBracket = float64(bracket.UpperBound) - float64(bracket.LowerBound)
             }
 
-            taxForBracket := incomeInBracket * bracket.Rate
-            taxBeforeWHT += taxForBracket
+            taxBeforeWHT += incomeInBracket * bracket.Rate
             remainingIncome -= incomeInBracket
-
-            result.TaxLevel = append(result.TaxLevel, models.TaxBracket{
-                LowerBound: bracket.LowerBound,
-                UpperBound: bracket.UpperBound,
-                Rate:       bracket.Rate,
-            })
 
             if bracket.UpperBound == -1 {
                 break
@@ -78,6 +65,7 @@ func (r *PostgresTaxRepository) CalculateTax(input models.TaxCalculationInput) (
     }
 
     taxAfterWHT := taxBeforeWHT - input.WHT
+    result := models.TaxCalculationResult{}
     if taxAfterWHT < 0 {
         result.TaxRefund = -taxAfterWHT
         result.Tax = 0
@@ -88,31 +76,10 @@ func (r *PostgresTaxRepository) CalculateTax(input models.TaxCalculationInput) (
     return result, nil
 }
 
-
-
 type PostgresAdminRepository struct {
 	db *sql.DB
 }
 
 func NewPostgresAdminRepository(db *sql.DB) *PostgresAdminRepository {
 	return &PostgresAdminRepository{db: db}
-}
-
-func (r *PostgresAdminRepository) GetAdminSettings() (models.AdminSettings, error) {
-	// Fetch the admin settings from the database
-	settings := models.AdminSettings{}
-	// Database operation...
-	return settings, nil
-}
-
-func (r *PostgresAdminRepository) SetPersonalDeduction(deduction float64) error {
-	// Update the personal deduction in the database
-	// Database operation...
-	return nil
-}
-
-func (r *PostgresAdminRepository) SetKReceiptLimit(limit float64) error {
-	// Update the KReceipt limit in the database
-	// Database operation...
-	return nil
 }
