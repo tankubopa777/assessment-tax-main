@@ -15,7 +15,6 @@ func NewPostgresTaxRepository(db *sql.DB) *PostgresTaxRepository {
 }
 
 func (r *PostgresTaxRepository) CalculateTax(input models.TaxCalculationInput) (models.TaxCalculationResult, error) {
-    // Define the tax brackets based on your exercise
     taxBrackets := []models.TaxBracket{
         {LowerBound: 0, UpperBound: 150000, Rate: 0},
         {LowerBound: 150001, UpperBound: 500000, Rate: 0.1},
@@ -24,30 +23,47 @@ func (r *PostgresTaxRepository) CalculateTax(input models.TaxCalculationInput) (
         {LowerBound: 2000001, UpperBound: -1, Rate: 0.35}, // -1 indicates no upper limit
     }
 
-    // Calculate the total deductions
-    var totalDeductions float64 = 60000 // The basic personal deduction
-    for _, allowance := range input.Allowances {
-        totalDeductions += allowance.Amount
-    }
+    var totalDeductions float64 = 60000 // ค่าลดหย่อนส่วนตัวเริ่มต้น
+    var donationDeduction float64 = 0
+    var kReceiptDeduction float64 = 0
 
-    // Calculate taxable income
+    // Calculate total deductions
+    for _, allowance := range input.Allowances {
+        if allowance.AllowanceType == "donation" {
+            donationDeduction += allowance.Amount
+            if donationDeduction > 100000 {
+                donationDeduction = 100000 
+            }
+        } else if allowance.AllowanceType == "k-receipt" {
+            kReceiptDeduction += allowance.Amount
+            if kReceiptDeduction > 50000 {
+                kReceiptDeduction = 50000
+            }
+        } else {
+            totalDeductions += allowance.Amount
+        }
+    }
+    totalDeductions += donationDeduction + kReceiptDeduction
+
     taxableIncome := input.TotalIncome - totalDeductions
 
-    // Initialize the result
     result := models.TaxCalculationResult{
         TaxLevel: make([]models.TaxBracket, 0),
     }
 
-    // Calculate the tax based on the taxable income
+    taxBeforeWHT := 0.0
+    remainingIncome := taxableIncome
+
     for _, bracket := range taxBrackets {
-        if taxableIncome > float64(bracket.LowerBound) {
-            incomeInBracket := taxableIncome
-            if bracket.UpperBound != -1 && taxableIncome > float64(bracket.UpperBound) {
+        if remainingIncome > float64(bracket.LowerBound) {
+            incomeInBracket := remainingIncome
+            if bracket.UpperBound != -1 && remainingIncome > float64(bracket.UpperBound) {
                 incomeInBracket = float64(bracket.UpperBound - bracket.LowerBound)
             }
 
             taxForBracket := incomeInBracket * bracket.Rate
-            result.Tax += taxForBracket
+            taxBeforeWHT += taxForBracket
+            remainingIncome -= incomeInBracket
 
             result.TaxLevel = append(result.TaxLevel, models.TaxBracket{
                 LowerBound: bracket.LowerBound,
@@ -55,20 +71,24 @@ func (r *PostgresTaxRepository) CalculateTax(input models.TaxCalculationInput) (
                 Rate:       bracket.Rate,
             })
 
-            if bracket.UpperBound == -1 || taxableIncome <= float64(bracket.UpperBound) {
+            if bracket.UpperBound == -1 {
                 break
             }
         }
     }
 
-    result.Tax -= input.WHT
-    if result.Tax < 0 {
-        result.TaxRefund = -result.Tax // Negative tax means refund
+    taxAfterWHT := taxBeforeWHT - input.WHT
+    if taxAfterWHT < 0 {
+        result.TaxRefund = -taxAfterWHT
         result.Tax = 0
+    } else {
+        result.Tax = taxAfterWHT
     }
 
     return result, nil
 }
+
+
 
 type PostgresAdminRepository struct {
 	db *sql.DB

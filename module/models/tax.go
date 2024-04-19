@@ -1,9 +1,9 @@
 package models
 
 type TaxBracket struct {
-	LowerBound int    
+	LowerBound int 
 	UpperBound int     
-	Rate       float64 
+	Rate       float64 `json:"tax"`
 }
 
 type Allowance struct {
@@ -18,7 +18,7 @@ type TaxCalculationInput struct {
 }
 
 type TaxCalculationResult struct {
-	Tax         float64     
-	TaxRefund   float64      
-	TaxLevel    []TaxBracket 
+	Tax         float64 `json:"tax"`
+	TaxRefund   float64  `json:"tax_refund,omitempty"`    
+	TaxLevel    []TaxBracket `json:"tax_level"`
 }
