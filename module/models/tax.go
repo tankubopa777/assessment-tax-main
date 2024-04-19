@@ -24,15 +24,15 @@ type TaxCalculationInput struct {
 
 // TaxCalculationResult represents the result of tax calculation.
 type TaxCalculationResult struct {
-	Tax             float64
+	Tax             float64 `json:"tax"`
 	TaxRefund       float64
-	TaxLevelDetails []TaxLevelDetail
+	TaxLevelDetails []TaxLevelDetail `json:"taxLevel"`
 }
 
 // TaxLevelDetail represents the details of tax calculation for a specific income bracket.
 type TaxLevelDetail struct {
-	Level string
-	Tax   float64
+	Level string `json:"level"`
+	Tax   float64 `json:"tax"`
 }
 
 // String provides a string representation of a TaxBracket, which can be used for output.
