@@ -25,56 +25,46 @@ func (r *PostgresTaxRepository) CalculateTax(input models.TaxCalculationInput) (
         {LowerBound: 2000001, UpperBound: -1, Rate: 0.35},
     }
 
-    // Standard personal deduction
     var totalDeductions float64 = 60000 
 
-    // Loop through allowances
     for _, allowance := range input.Allowances {
-        switch allowance.AllowanceType {
-        case "donation":
-            if allowance.Amount > 100000 {
-                totalDeductions += 100000
-            } else {
-                totalDeductions += allowance.Amount
-            }
-        case "k-receipt":
-            if allowance.Amount > 50000 {
-                totalDeductions += 50000
-            } else {
-                totalDeductions += allowance.Amount
-            }
+        if allowance.AllowanceType == "donation" {
+            totalDeductions += math.Min(allowance.Amount, 100000)
+        } else if allowance.AllowanceType == "k-receipt" {
+            totalDeductions += math.Min(allowance.Amount, 50000)
         }
     }
 
     taxableIncome := input.TotalIncome - totalDeductions
     fmt.Println("taxableIncome: ", taxableIncome)
     var taxAmount float64
-    var applicableBracket *models.TaxBracket
+    var taxDetails []models.TaxLevelDetail
 
-    // Determine the tax bracket and calculate the tax based on the correct interval
+    // Initialize all tax levels with zero tax
     for _, bracket := range taxBrackets {
+        levelDescription := fmt.Sprintf("%d-%d", bracket.LowerBound, bracket.UpperBound)
+        if bracket.UpperBound == -1 {
+            levelDescription = fmt.Sprintf("%d ขึ้นไป", bracket.LowerBound)
+        }
+        taxDetails = append(taxDetails, models.TaxLevelDetail{
+            Level: levelDescription,
+            Tax:   0,
+        })
+    }
+
+    // Calculate tax for the applicable bracket
+    for i, bracket := range taxBrackets {
         if taxableIncome > float64(bracket.LowerBound) && (bracket.UpperBound == -1 || taxableIncome <= float64(bracket.UpperBound)) {
-            applicableBracket = &bracket
-            taxAmount = (taxableIncome - float64(bracket.LowerBound)) * bracket.Rate
+            taxAmount = (taxableIncome - (float64(bracket.LowerBound)-1)) * bracket.Rate
+            fmt.Println(float64(bracket.LowerBound))
+            fmt.Println("taxAmount: ", taxAmount)
+            taxDetails[i].Tax = math.Round(taxAmount) 
             break
         }
     }
 
-    taxAmount = math.Round(taxAmount)  // Round the tax amount to the nearest whole number
-
-    var taxDetails []models.TaxLevelDetail
-    if applicableBracket != nil {
-        levelDescription := fmt.Sprintf("%d-%d", applicableBracket.LowerBound, applicableBracket.UpperBound)
-        if applicableBracket.UpperBound == -1 {
-            levelDescription = fmt.Sprintf("%d ขึ้นไป", applicableBracket.LowerBound)
-        }
-        taxDetails = append(taxDetails, models.TaxLevelDetail{
-            Level: levelDescription,
-            Tax:   taxAmount,
-        })
-    }
-
     finalTax := taxAmount - input.WHT
+
     var taxRefund float64
     if finalTax < 0 {
         taxRefund = -finalTax
@@ -87,6 +77,7 @@ func (r *PostgresTaxRepository) CalculateTax(input models.TaxCalculationInput) (
         TaxLevelDetails: taxDetails,
     }, nil
 }
+
 
 
 
