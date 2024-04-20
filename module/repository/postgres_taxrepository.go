@@ -52,7 +52,6 @@ func (r *PostgresTaxRepository) CalculateTax(input models.TaxCalculationInput) (
         })
     }
 
-    // Calculate tax for the applicable bracket
     for i, bracket := range taxBrackets {
         if taxableIncome > float64(bracket.LowerBound) && (bracket.UpperBound == -1 || taxableIncome <= float64(bracket.UpperBound)) {
             taxAmount = (taxableIncome - (float64(bracket.LowerBound)-1)) * bracket.Rate
@@ -77,10 +76,6 @@ func (r *PostgresTaxRepository) CalculateTax(input models.TaxCalculationInput) (
         TaxLevelDetails: taxDetails,
     }, nil
 }
-
-
-
-
 
 type PostgresAdminRepository struct {
 	db *sql.DB
