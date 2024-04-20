@@ -78,14 +78,29 @@ func (r *PostgresTaxRepository) CalculateTax(input models.TaxCalculationInput) (
     }, nil
 }
 
-
-
-
-
 type PostgresAdminRepository struct {
 	db *sql.DB
 }
 
 func NewPostgresAdminRepository(db *sql.DB) *PostgresAdminRepository {
 	return &PostgresAdminRepository{db: db}
+}
+
+func (r *PostgresTaxRepository) GetAdminSettings() (models.AdminSettings, error) {
+    // Fetch the admin settings from the database
+    settings := models.AdminSettings{}
+    // Placeholder: simulate fetching data
+    settings.PersonalDeduction = 60000
+    settings.KReceiptLimit = 50000
+    return settings, nil
+}
+
+func (r *PostgresTaxRepository) SetPersonalDeduction(deduction float64) error {
+    // Placeholder: simulate database update
+    return nil
+}
+
+func (r *PostgresTaxRepository) SetKReceiptLimit(limit float64) error {
+    // Placeholder: simulate database update
+    return nil
 }
