@@ -2,6 +2,8 @@ package repository
 
 import (
 	"database/sql"
+	"fmt"
+	"math"
 
 	"github.com/KKGo-Software-engineering/assessment-tax/module/models"
 )
@@ -23,58 +25,62 @@ func (r *PostgresTaxRepository) CalculateTax(input models.TaxCalculationInput) (
         {LowerBound: 2000001, UpperBound: -1, Rate: 0.35}, // -1 indicates no upper limit
     }
 
-    // Calculate total deductions
     var totalDeductions float64 = 60000 // Standard personal deduction
-    var donationDeduction float64 = 0
-    var kReceiptDeduction float64 = 0
 
+    // Process allowances and cap them accordingly
     for _, allowance := range input.Allowances {
         if allowance.AllowanceType == "donation" {
-            donationDeduction += allowance.Amount
-            if donationDeduction > 100000 {
-                donationDeduction = 100000
-            }
+            totalDeductions += math.Min(allowance.Amount, 100000)
         } else if allowance.AllowanceType == "k-receipt" {
-            kReceiptDeduction += allowance.Amount
-            if kReceiptDeduction > 50000 {
-                kReceiptDeduction = 50000
-            }
+            totalDeductions += math.Min(allowance.Amount, 50000)
         }
     }
-    totalDeductions += donationDeduction + kReceiptDeduction
 
     taxableIncome := input.TotalIncome - totalDeductions
-    taxBeforeWHT := 0.0
-    remainingIncome := taxableIncome
+    fmt.Println("taxableIncome: ", taxableIncome)
+    var taxAmount float64
+    taxDetails := make([]models.TaxLevelDetail, len(taxBrackets))
 
-    for _, bracket := range taxBrackets {
-        if remainingIncome > float64(bracket.LowerBound) {
-            incomeInBracket := remainingIncome
-            if bracket.UpperBound != -1 && remainingIncome > float64(bracket.UpperBound) {
-                incomeInBracket = float64(bracket.UpperBound) - float64(bracket.LowerBound)
+    // Populate the tax details with level descriptions
+    for i, bracket := range taxBrackets {
+        if bracket.UpperBound == -1 {
+            taxDetails[i].Level = fmt.Sprintf("%d ขึ้นไป", bracket.LowerBound)
+        } else {
+            taxDetails[i].Level = fmt.Sprintf("%d-%d", bracket.LowerBound, bracket.UpperBound)
+        }
+    }
+
+    // Calculate tax for the applicable income ranges
+    for i, bracket := range taxBrackets {
+        if taxableIncome > float64(bracket.LowerBound) {
+            incomeInBracket := taxableIncome
+            if bracket.UpperBound != -1 && taxableIncome > float64(bracket.UpperBound) {
+                incomeInBracket = float64(bracket.UpperBound) - (float64(bracket.LowerBound) - 1)
+            } else {
+                incomeInBracket -= (float64(bracket.LowerBound) - 1)
             }
 
-            taxBeforeWHT += incomeInBracket * bracket.Rate
-            remainingIncome -= incomeInBracket
-
-            if bracket.UpperBound == -1 {
+            taxAmount = incomeInBracket * bracket.Rate
+            taxDetails[i].Tax = math.Round(taxAmount)
+            if bracket.UpperBound != -1 && taxableIncome <= float64(bracket.UpperBound) {
                 break
             }
         }
     }
 
-    taxAfterWHT := taxBeforeWHT - input.WHT
-    result := models.TaxCalculationResult{}
-    if taxAfterWHT < 0 {
-        result.TaxRefund = -taxAfterWHT
-        result.Tax = 0
-    } else {
-        result.Tax = taxAfterWHT
+    // Adjust tax by withholding tax and handle tax refund scenario
+    finalTax := taxAmount - input.WHT
+    var taxRefund float64
+    if finalTax < 0 {
+        taxRefund = -finalTax
+        finalTax = 0
     }
 
-    return result, nil
+    return models.TaxCalculationResult{
+        Tax:            finalTax,
+        TaxRefund:      taxRefund,
+    }, nil
 }
-
 type PostgresAdminRepository struct {
 	db *sql.DB
 }
