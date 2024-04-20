@@ -58,7 +58,11 @@ func (r *PostgresTaxRepository) CalculateTax(input models.TaxCalculationInput) (
             taxAmount = (taxableIncome - (float64(bracket.LowerBound)-1)) * bracket.Rate
             fmt.Println(float64(bracket.LowerBound))
             fmt.Println("taxAmount: ", taxAmount)
-            taxDetails[i].Tax = math.Round(taxAmount) 
+            if input.WHT > 0 {
+                taxDetails[i].Tax = math.Round(taxAmount) - input.WHT
+                break
+            }
+            taxDetails[i].Tax = math.Round(taxAmount)
             break
         }
     }
