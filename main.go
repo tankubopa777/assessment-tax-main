@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"net/http"
 	"os"
 
 	"github.com/KKGo-Software-engineering/assessment-tax/module/config"
@@ -37,6 +36,8 @@ func main() {
 
 	taxRepo := repository.NewPostgresTaxRepository(db)
 	taxHandler := handlers.NewTaxHandler(taxRepo)
+	adminRepo := repository.NewPostgresAdminRepository(db) // สร้าง admin repository instance
+	adminHandler := handlers.NewAdminHandler(adminRepo)    // สร้าง admin handler instance
 
 	// Public endpoints
 	e.POST("/tax/calculations", taxHandler.CalculateTax)
@@ -45,13 +46,10 @@ func main() {
 	adminGroup := e.Group("/admin")
 	adminGroup.Use(adminAuthMiddleware)
 
-	// Here you would add your admin routes, e.g., to set personal deduction:
-	adminGroup.POST("/deductions/personal", func(c echo.Context) error {
-		// Your logic to handle the admin deduction setting
-		return c.JSON(http.StatusOK, map[string]interface{}{
-			"personalDeduction": 70000.0,
-		})
-	})
+	// Admin setting routes using the adminHandler
+	adminGroup.GET("/settings", adminHandler.GetAdminSettings) // หากต้องการเรียกดูการตั้งค่า
+	adminGroup.POST("/deductions/personal", adminHandler.SetPersonalDeduction) // สำหรับการตั้งค่า personal deduction
+	adminGroup.POST("/deductions/k-receipt-limit", adminHandler.SetKReceiptLimit) // สำหรับการตั้งค่า k-receipt limit
 
 	e.Logger.Fatal(e.Start(":5050"))
 }
