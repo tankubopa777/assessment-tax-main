@@ -35,12 +35,13 @@ func main() {
 	})
 
 	taxRepo := repository.NewPostgresTaxRepository(db)
-	taxHandler := handlers.NewTaxHandler(taxRepo)
-	adminRepo := repository.NewPostgresAdminRepository(db) // สร้าง admin repository instance
-	adminHandler := handlers.NewAdminHandler(adminRepo)    // สร้าง admin handler instance
+    taxHandler := handlers.NewTaxHandler(taxRepo)
+    adminRepo := repository.NewPostgresAdminRepository(db) // Create admin repository instance
+    adminHandler := handlers.NewAdminHandler(adminRepo)    // Create admin handler instance
 
-	// Public endpoints
-	e.POST("/tax/calculations", taxHandler.CalculateTax)
+    // Public endpoints
+    e.POST("/tax/calculations", taxHandler.CalculateTax)
+    e.POST("/tax/calculations/upload-csv", taxHandler.UploadTaxCalculations) // New endpoint for uploading CSV
 
 	// Admin endpoints with Basic Auth Middleware
 	adminGroup := e.Group("/admin")

@@ -17,9 +17,7 @@ func NewAdminHandler(adminRepo repository.AdminRepository) *AdminHandler {
 	}
 }
 
-// อย่าลืม import ของแพคเกจที่จำเป็น เช่น "net/http" และ "github.com/labstack/echo/v4"
 
-// GetAdminSettings returns the admin settings to the client.
 func (h *AdminHandler) GetAdminSettings(c echo.Context) error {
 	settings, err := h.adminRepo.GetAdminSettings()
 	if err != nil {
@@ -28,7 +26,6 @@ func (h *AdminHandler) GetAdminSettings(c echo.Context) error {
 	return c.JSON(http.StatusOK, settings)
 }
 
-// SetPersonalDeduction updates the personal deduction in the admin settings.
 func (h *AdminHandler) SetPersonalDeduction(c echo.Context) error {
 	var request struct {
 		Deduction float64 `json:"personalDeduction"`
@@ -47,7 +44,6 @@ func (h *AdminHandler) SetPersonalDeduction(c echo.Context) error {
 	})
 }
 
-// SetKReceiptLimit updates the K-receipt limit in the admin settings.
 func (h *AdminHandler) SetKReceiptLimit(c echo.Context) error {
 	var request struct {
 		Limit float64 `json:"kReceiptLimit"`
