@@ -115,8 +115,7 @@ func (r *PostgresAdminRepository) SetKReceiptLimit(limit float64) error {
     return err
 }
 
-// ProcessTaxCalculationsFromCSV processes tax calculations from a CSV file.
-func (r *PostgresTaxRepository) ProcessTaxCalculationsFromCSV(filePath string) ([]models.CSVTaxCalculationResult, error) {
+func (r *PostgresTaxRepository) TaxCalculationsFromCSV(filePath string) ([]models.CSVTaxCalculationResult, error) {
     file, err := os.Open(filePath)
     if err != nil {
         return nil, err
@@ -157,9 +156,9 @@ func (r *PostgresTaxRepository) ProcessTaxCalculationsFromCSV(filePath string) (
             return nil, fmt.Errorf("error parsing donation: %v", err)
         }
 
-        // Calculate tax based on the parsed values
-        taxableIncome := totalIncome - (60000 + donation) // Personal deduction and donation deduction
-        tax := calculateTax(taxableIncome - wht) // Adjust taxable income by WHT and calculate tax
+
+        taxableIncome := totalIncome - (60000 + donation) 
+        tax := calculateTax(taxableIncome - wht) 
 
         results = append(results, models.CSVTaxCalculationResult{
             TotalIncome: totalIncome,
@@ -185,13 +184,11 @@ func calculateTax(taxableIncome float64) float64 {
 		if taxableIncome <= float64(bracket.LowerBound) {
 			continue
 		}
-		// ตรวจสอบว่า upperBound ของช่วงภาษีนั้นเป็น -1 หรือไม่
 		upperBound := float64(bracket.UpperBound)
 		if bracket.UpperBound == -1 {
 			upperBound = taxableIncome
 		}
 
-		// คำนวณรายได้ในช่วงนี้ที่ต้องเสียภาษี
 		if taxableIncome > upperBound {
 			tax += (upperBound - float64(bracket.LowerBound)) * bracket.Rate
 		} else {

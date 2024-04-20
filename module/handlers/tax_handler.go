@@ -66,7 +66,7 @@ func (h *TaxHandler) UploadTaxCalculations(c echo.Context) error {
 	}
 
 	// Now that the file is saved, pass the file path to the repository method
-	results, err := h.repo.ProcessTaxCalculationsFromCSV(tempFilePath)
+	results, err := h.repo.TaxCalculationsFromCSV(tempFilePath)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("Failed to process the CSV file: %v", err))
 	}
