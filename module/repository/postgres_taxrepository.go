@@ -47,7 +47,6 @@ func (r *PostgresTaxRepository) CalculateTax(input models.TaxCalculationInput) (
     taxBeforeWHT := 0.0
     remainingIncome := taxableIncome
 
-    // Calculating tax without storing tax levels
     for _, bracket := range taxBrackets {
         if remainingIncome > float64(bracket.LowerBound) {
             incomeInBracket := remainingIncome
