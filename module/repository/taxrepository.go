@@ -76,13 +76,3 @@ func (r *PostgresTaxRepository) CalculateTax(input models.TaxCalculationInput) (
         TaxRefund: taxRefund,
     }, nil
 }
-
-
-
-type PostgresAdminRepository struct {
-	db *sql.DB
-}
-
-func NewPostgresAdminRepository(db *sql.DB) *PostgresAdminRepository {
-	return &PostgresAdminRepository{db: db}
-}
