@@ -1,13 +1,17 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"time"
 
-	"github.com/KKGo-Software-engineering/assessment-tax/module/config"
-	"github.com/KKGo-Software-engineering/assessment-tax/module/handlers"
-	"github.com/KKGo-Software-engineering/assessment-tax/module/repository"
 	"github.com/labstack/echo/v4"
+	"github.com/tankubopa777/assessment-tax/module/config"
+	"github.com/tankubopa777/assessment-tax/module/handlers"
+	"github.com/tankubopa777/assessment-tax/module/repository"
 )
 
 func main() {
@@ -15,7 +19,7 @@ func main() {
 
 	db, err := config.NewDatabaseConnection()
 	if err != nil {
-		log.Fatalf("Error connecting to database: %v", err) // Using log.Fatalf will terminate the program if there's an error
+		log.Fatalf("Error connecting to database: %v", err)
 	}
 	defer db.Close()
 
@@ -28,6 +32,21 @@ func main() {
 
 	e.POST("/tax/calculations", taxHandler.CalculateTax)
 
+	go func() {
+		if err := e.Start(":5050"); err != nil && err != http.ErrServerClosed {
+			e.Logger.Fatal("shutting down the server")
+		}
+	}()
 
-	e.Logger.Fatal(e.Start(":5050"))
+	shutdown := make(chan os.Signal, 1)
+	signal.Notify(shutdown, os.Interrupt, os.Kill)
+	<-shutdown
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if err := e.Shutdown(ctx); err != nil {
+		e.Logger.Fatal(err)
+	}
+	log.Println("Shutting down the server...")
 }
