@@ -30,8 +30,9 @@ type TaxLevelDetail struct {
 }
 
 func (tb TaxBracket) String() string {
-	if tb.UpperBound == -1 {
-		return fmt.Sprintf("%d ขึ้นไป", tb.LowerBound)
-	}
-	return fmt.Sprintf("%d-%d", tb.LowerBound, tb.UpperBound)
+    if tb.UpperBound == -1 {
+        return fmt.Sprintf("%d ขึ้นไป", tb.LowerBound + 1)
+    }
+    return fmt.Sprintf("%d-%d", tb.LowerBound + 1, tb.UpperBound)
 }
+
