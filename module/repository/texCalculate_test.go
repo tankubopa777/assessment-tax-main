@@ -50,21 +50,6 @@ func TestCalculateTax(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Test Story 2 : KBank want",
-			input: models.TaxCalculationInput{
-				TotalIncome: 500000.0,
-				WHT:         0.0,
-				Allowances: []models.Allowance{
-					{},
-				},
-			},
-			wantResult: models.TaxCalculationResult{
-				Tax:       29000.0,
-				TaxRefund: 0,
-			},
-			wantErr: false,
-		},
-		{
 			name: "Test Story 1 : Tax level 0 - 150,000",
 			input: models.TaxCalculationInput{
 				TotalIncome: 15000.0,

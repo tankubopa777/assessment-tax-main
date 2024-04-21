@@ -1,4 +1,4 @@
-package repository
+package service
 
 import (
 	"github.com/tankubopa777/assessment-tax/module/models"
