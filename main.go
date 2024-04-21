@@ -39,7 +39,7 @@ func main() {
 		}
 	}()
 
-	// Wait for interrupt signal to gracefully shut down the server with a timeout of 2 seconds
+	// Wait for interrupt signal to gracefully shut down the server with a timeout of 10 seconds
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, os.Interrupt, os.Kill)
 	<-shutdown
