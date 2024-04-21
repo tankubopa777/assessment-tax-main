@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/KKGo-Software-engineering/assessment-tax/module/models"
-	"github.com/KKGo-Software-engineering/assessment-tax/module/repository"
 	"github.com/stretchr/testify/assert"
+	"github.com/tankubopa777/assessment-tax/module/models"
+	"github.com/tankubopa777/assessment-tax/module/repository"
 )
 
-func TestCalculateTax(t *testing.T) {
+func TestCalculateTaxStory1(t *testing.T) {
 	db := &sql.DB{}
 	repo := repository.NewPostgresTaxRepository(db)
 
@@ -46,21 +46,6 @@ func TestCalculateTax(t *testing.T) {
 			},
 			wantResult: models.TaxCalculationResult{
 				Tax:      ((500000 - 60000)-150000) * 0.1,
-				TaxRefund: 0,
-			},
-			wantErr: false,
-		},
-		{
-			name: "Test Story 2 : KBank want",
-			input: models.TaxCalculationInput{
-				TotalIncome: 500000.0,
-				WHT:         25000.0,
-				Allowances: []models.Allowance{
-					{},
-				},
-			},
-			wantResult: models.TaxCalculationResult{
-				Tax:       4000.0,
 				TaxRefund: 0,
 			},
 			wantErr: false,
