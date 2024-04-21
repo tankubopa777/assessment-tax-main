@@ -28,7 +28,6 @@ func (h *AdminHandler) GetAdminSettings(c echo.Context) error {
 	return c.JSON(http.StatusOK, settings)
 }
 
-// SetPersonalDeduction updates the personal deduction in the admin settings.
 func (h *AdminHandler) SetPersonalDeduction(c echo.Context) error {
 	var request struct {
 		Deduction float64 `json:"amount"`
@@ -38,16 +37,23 @@ func (h *AdminHandler) SetPersonalDeduction(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid input")
 	}
 
+	if request.Deduction > 100000 {
+		return echo.NewHTTPError(http.StatusBadRequest, "Personal deduction cannot exceed 100,000 THB")
+	}
+
+	if request.Deduction < 10000 {
+		return echo.NewHTTPError(http.StatusBadRequest, "Personal deduction cannot be less than 10,000 THB")
+	}
+
 	err := h.adminRepo.SetPersonalDeduction(request.Deduction)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Error updating personal deduction")
 	}
 	return c.JSON(http.StatusOK, map[string]interface{}{
-		"message": "Personal deduction updated successfully",
+		"personalDeduction": request.Deduction,
 	})
 }
 
-// SetKReceiptLimit updates the K-receipt limit in the admin settings.
 func (h *AdminHandler) SetKReceiptLimit(c echo.Context) error {
 	var request struct {
 		Limit float64 `json:"amount"`
@@ -57,11 +63,19 @@ func (h *AdminHandler) SetKReceiptLimit(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid input")
 	}
 
+	if request.Limit > 100000 {
+		return echo.NewHTTPError(http.StatusBadRequest, "K-receipt limit cannot exceed 100,000 THB")
+	}
+
+	if request.Limit <= 0 {
+		return echo.NewHTTPError(http.StatusBadRequest, "K-receipt limit must be greater than 0")
+	}
+
 	err := h.adminRepo.SetKReceiptLimit(request.Limit)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Error updating K-receipt limit")
 	}
 	return c.JSON(http.StatusOK, map[string]interface{}{
-		"message": "K-receipt limit updated successfully",
+		"kReceipt": request.Limit,
 	})
 }
