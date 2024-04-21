@@ -6,8 +6,8 @@ curl -X POST http://localhost:5050/tax/calculations \
   "allowances": [
     {
       "allowanceType": "k-receipt",
-      "amount": 200000.0
-    },
+      "amount": 100000.0
+    }
   ]
 }'
 

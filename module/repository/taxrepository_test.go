@@ -122,7 +122,9 @@ func TestCalculateTax(t *testing.T) {
 			input: models.TaxCalculationInput{
 				TotalIncome: 500000.0,
 				WHT:         40000.0,
-				Allowances: []models.Allowance{},
+				Allowances: []models.Allowance{
+				
+				},
 			},
 			wantResult: models.TaxCalculationResult{
 				Tax:       0.0,
@@ -130,7 +132,42 @@ func TestCalculateTax(t *testing.T) {
 			},
 			wantErr: false,
 		},
-		
+		{
+			name: "Test Case for donation allowance",
+			input: models.TaxCalculationInput{
+				TotalIncome: 500000.0,
+				WHT:         0.0,
+				Allowances: []models.Allowance{
+					{
+						AllowanceType: "donation",
+						Amount:        200000.0,
+					},
+				},
+			},
+			wantResult: models.TaxCalculationResult{
+				Tax:       19000,
+				TaxRefund: 0,
+			},
+			wantErr: false,
+		},
+		{
+			name: "Test Case for k-receipt allowance",
+			input: models.TaxCalculationInput{
+				TotalIncome: 500000.0,
+				WHT:         0.0,
+				Allowances: []models.Allowance{
+					{
+						AllowanceType: "k-receipt",
+						Amount:        60000.0,
+					},
+				},
+			},
+			wantResult: models.TaxCalculationResult{
+				Tax:       24000,
+				TaxRefund: 0,
+			},
+			wantErr: false,
+		},
 	}
 
 	for _, tt := range tests {

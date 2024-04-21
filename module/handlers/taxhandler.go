@@ -4,15 +4,15 @@ import (
 	"net/http"
 
 	"github.com/KKGo-Software-engineering/assessment-tax/module/models"
-	"github.com/KKGo-Software-engineering/assessment-tax/module/repository"
+	"github.com/KKGo-Software-engineering/assessment-tax/module/service"
 	"github.com/labstack/echo/v4"
 )
 
 type TaxHandler struct {
-	repo repository.TaxRepository
+	repo service.TaxRepository
 }
 
-func NewTaxHandler(repo repository.TaxRepository) *TaxHandler {
+func NewTaxHandler(repo service.TaxRepository) *TaxHandler {
 	return &TaxHandler{
 		repo: repo,
 	}
