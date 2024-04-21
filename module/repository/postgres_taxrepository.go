@@ -37,7 +37,7 @@ func (r *PostgresTaxRepository) CalculateTax(input models.TaxCalculationInput) (
     }
 
     taxableIncome := input.TotalIncome - totalDeductions
-    fmt.Println("taxableIncome: ", taxableIncome)
+    // fmt.Println("taxableIncome: ", taxableIncome)
     var taxAmount float64
     taxDetails := make([]models.TaxLevelDetail, len(taxBrackets))
 
@@ -61,6 +61,7 @@ func (r *PostgresTaxRepository) CalculateTax(input models.TaxCalculationInput) (
             }
 
             taxAmount = incomeInBracket * bracket.Rate
+            taxAmount = math.Round(taxAmount*100) / 100
             taxDetails[i].Tax = math.Round(taxAmount)
             if bracket.UpperBound != -1 && taxableIncome <= float64(bracket.UpperBound) {
                 break

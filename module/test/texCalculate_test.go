@@ -30,7 +30,37 @@ func TestCalculateTax(t *testing.T) {
 				},
 			},
 			wantResult: models.TaxCalculationResult{
-				Tax:       29000.0,
+				Tax:      ((500000 - 60000)-150000) * 0.1,
+				TaxRefund: 0,
+			},
+			wantErr: false,
+		},
+		{
+			name: "Test Story 1 : KBank want",
+			input: models.TaxCalculationInput{
+				TotalIncome: 500000.0,
+				WHT:         0.0,
+				Allowances: []models.Allowance{
+					{},
+				},
+			},
+			wantResult: models.TaxCalculationResult{
+				Tax:      ((500000 - 60000)-150000) * 0.1,
+				TaxRefund: 0,
+			},
+			wantErr: false,
+		},
+		{
+			name: "Test Story 2 : KBank want",
+			input: models.TaxCalculationInput{
+				TotalIncome: 500000.0,
+				WHT:         25000.0,
+				Allowances: []models.Allowance{
+					{},
+				},
+			},
+			wantResult: models.TaxCalculationResult{
+				Tax:       4000.0,
 				TaxRefund: 0,
 			},
 			wantErr: false,
@@ -45,7 +75,22 @@ func TestCalculateTax(t *testing.T) {
 				},
 			},
 			wantResult: models.TaxCalculationResult{
-				Tax:       66000.0,
+				Tax:        ((1000000 - 60000)-500000) * 0.15,
+				TaxRefund: 0,
+			},
+			wantErr: false,
+		},
+		{
+			name: "Test Story 1 : Tax level 0 - 150,000",
+			input: models.TaxCalculationInput{
+				TotalIncome: 15000.0,
+				WHT:         0.0,
+				Allowances: []models.Allowance{
+					{},
+				},
+			},
+			wantResult: models.TaxCalculationResult{
+				Tax:       0.0,
 				TaxRefund: 0,
 			},
 			wantErr: false,
