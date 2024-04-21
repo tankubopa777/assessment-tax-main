@@ -31,7 +31,7 @@ func (h *AdminHandler) GetAdminSettings(c echo.Context) error {
 // SetPersonalDeduction updates the personal deduction in the admin settings.
 func (h *AdminHandler) SetPersonalDeduction(c echo.Context) error {
 	var request struct {
-		Deduction float64 `json:"personalDeduction"`
+		Deduction float64 `json:"amount"`
 	}
 
 	if err := c.Bind(&request); err != nil {
@@ -50,7 +50,7 @@ func (h *AdminHandler) SetPersonalDeduction(c echo.Context) error {
 // SetKReceiptLimit updates the K-receipt limit in the admin settings.
 func (h *AdminHandler) SetKReceiptLimit(c echo.Context) error {
 	var request struct {
-		Limit float64 `json:"kReceiptLimit"`
+		Limit float64 `json:"amount"`
 	}
 
 	if err := c.Bind(&request); err != nil {

@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/KKGo-Software-engineering/assessment-tax/module/models"
 )
@@ -26,6 +27,20 @@ func (r *PostgresTaxRepository) CalculateTax(input models.TaxCalculationInput) (
     var totalDeductions float64 = 60000
     var donationDeduction float64 = 0
     var kReceiptDeduction float64 = 0
+
+    err := r.db.QueryRow("SELECT personal_deduction FROM admin_settings WHERE id = 1").Scan(&totalDeductions)
+    if err != nil {
+        return models.TaxCalculationResult{}, fmt.Errorf("failed to fetch base deduction: %w", err)
+    }
+
+    err = r.db.QueryRow("SELECT k_receipt_limit FROM admin_settings WHERE id = 1").Scan(&kReceiptDeduction)
+    if err != nil {
+        return models.TaxCalculationResult{}, fmt.Errorf("failed to fetch k-receipt limit: %w", err)
+    }
+
+
+    fmt.Println(totalDeductions)
+    fmt.Println(kReceiptDeduction)
 
     for _, allowance := range input.Allowances {
         switch allowance.AllowanceType {
