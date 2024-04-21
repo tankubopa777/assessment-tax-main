@@ -32,14 +32,12 @@ func main() {
 
 	e.POST("/tax/calculations", taxHandler.CalculateTax)
 
-	// Start server in a goroutine so that it's non-blocking
 	go func() {
 		if err := e.Start(":5050"); err != nil && err != http.ErrServerClosed {
 			e.Logger.Fatal("shutting down the server")
 		}
 	}()
 
-	// Wait for interrupt signal to gracefully shut down the server with a timeout of 10 seconds
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, os.Interrupt, os.Kill)
 	<-shutdown
