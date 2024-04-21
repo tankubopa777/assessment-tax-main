@@ -37,6 +37,100 @@ func TestCalculateTax(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "Test Story 1 : KBank want",
+			input: models.TaxCalculationInput{
+				TotalIncome: 500000.0,
+				WHT:         0.0,
+				Allowances: []models.Allowance{
+					{},
+				},
+			},
+			wantResult: models.TaxCalculationResult{
+				Tax:       29000,
+				TaxRefund: 0,
+			},
+			wantErr: false,
+		},
+		{
+			name: "Test Story 1 : Tax level 0 - 150,000",
+			input: models.TaxCalculationInput{
+				TotalIncome: 15000.0,
+				WHT:         0.0,
+				Allowances: []models.Allowance{},
+			},
+			wantResult: models.TaxCalculationResult{
+				Tax:       0.0,
+				TaxRefund: 0,
+			},
+			wantErr: false,
+		},
+		{
+			name: "Test Story 1 : Tax level 500,001-1,000,000",
+			input: models.TaxCalculationInput{
+				TotalIncome: 660000.0,
+				WHT:         0.0,
+				Allowances: []models.Allowance{},
+			},
+			wantResult: models.TaxCalculationResult{
+				Tax:         50000, 
+				TaxRefund: 0,
+			},
+			wantErr: false,
+		},
+		{
+			name: "Test Story 1 : Tax level 500,001-1,000,000",
+			input: models.TaxCalculationInput{
+				TotalIncome: 1000000.0,
+				WHT:         0.0,
+				Allowances: []models.Allowance{},
+			},
+			wantResult: models.TaxCalculationResult{
+				Tax:         101000, 
+				TaxRefund: 0,
+			},
+			wantErr: false,
+		},
+		{
+			name: "Test Story 1 : Tax level 1,000,001-2,000,000",
+			input: models.TaxCalculationInput{
+				TotalIncome: 1500000.0,
+				WHT:         0.0,
+				Allowances: []models.Allowance{},
+			},
+			wantResult: models.TaxCalculationResult{
+				Tax:       198000,
+				TaxRefund: 0,
+			},
+			wantErr: false,
+		},
+		{
+			name: "Test Story 1 : Tax level 2,000,001 and above",
+			input: models.TaxCalculationInput{
+				TotalIncome: 2500000.0,
+				WHT:         0.0,
+				Allowances: []models.Allowance{},
+			},
+			wantResult: models.TaxCalculationResult{
+				Tax:       464000,
+				TaxRefund: 0,
+			},
+			wantErr: false,
+		},
+		{
+			name: "Test Story 1 : Tax Refund",
+			input: models.TaxCalculationInput{
+				TotalIncome: 500000.0,
+				WHT:         40000.0,
+				Allowances: []models.Allowance{},
+			},
+			wantResult: models.TaxCalculationResult{
+				Tax:       0.0,
+				TaxRefund: 40000 - 29000, 
+			},
+			wantErr: false,
+		},
+		
 	}
 
 	for _, tt := range tests {
