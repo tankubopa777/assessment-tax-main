@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/KKGo-Software-engineering/assessment-tax/module/models"
+	"github.com/tankubopa777/assessment-tax/module/models"
 )
 
 type PostgresTaxRepository struct {
@@ -26,15 +26,6 @@ func (r *PostgresTaxRepository) CalculateTax(input models.TaxCalculationInput) (
     }
 
     var totalDeductions float64 = 60000 // Standard personal deduction
-
-    // Process allowances and cap them accordingly
-    for _, allowance := range input.Allowances {
-        if allowance.AllowanceType == "donation" {
-            totalDeductions += math.Min(allowance.Amount, 100000)
-        } else if allowance.AllowanceType == "k-receipt" {
-            totalDeductions += math.Min(allowance.Amount, 50000)
-        }
-    }
 
     taxableIncome := input.TotalIncome - totalDeductions
     // fmt.Println("taxableIncome: ", taxableIncome)
@@ -81,11 +72,4 @@ func (r *PostgresTaxRepository) CalculateTax(input models.TaxCalculationInput) (
         Tax:            finalTax,
         TaxRefund:      taxRefund,
     }, nil
-}
-type PostgresAdminRepository struct {
-	db *sql.DB
-}
-
-func NewPostgresAdminRepository(db *sql.DB) *PostgresAdminRepository {
-	return &PostgresAdminRepository{db: db}
 }

@@ -1,18 +1,17 @@
-package test
+package repository
 
 import (
 	"database/sql"
 	"fmt"
 	"testing"
 
-	"github.com/KKGo-Software-engineering/assessment-tax/module/models"
-	"github.com/KKGo-Software-engineering/assessment-tax/module/repository"
 	"github.com/stretchr/testify/assert"
+	"github.com/tankubopa777/assessment-tax/module/models"
 )
 
 func TestCalculateTax(t *testing.T) {
 	db := &sql.DB{}
-	repo := repository.NewPostgresTaxRepository(db)
+	repo := NewPostgresTaxRepository(db)
 
 	tests := []struct {
 		name       string
@@ -54,28 +53,13 @@ func TestCalculateTax(t *testing.T) {
 			name: "Test Story 2 : KBank want",
 			input: models.TaxCalculationInput{
 				TotalIncome: 500000.0,
-				WHT:         25000.0,
-				Allowances: []models.Allowance{
-					{},
-				},
-			},
-			wantResult: models.TaxCalculationResult{
-				Tax:       4000.0,
-				TaxRefund: 0,
-			},
-			wantErr: false,
-		},
-		{
-			name: "Test Story 1 : Tax level 500,001-1,000,000",
-			input: models.TaxCalculationInput{
-				TotalIncome: 1000000.0,
 				WHT:         0.0,
 				Allowances: []models.Allowance{
 					{},
 				},
 			},
 			wantResult: models.TaxCalculationResult{
-				Tax:        ((1000000 - 60000)-500000) * 0.15,
+				Tax:       29000.0,
 				TaxRefund: 0,
 			},
 			wantErr: false,
@@ -91,6 +75,21 @@ func TestCalculateTax(t *testing.T) {
 			},
 			wantResult: models.TaxCalculationResult{
 				Tax:       0.0,
+				TaxRefund: 0,
+			},
+			wantErr: false,
+		},
+		{
+			name: "Test Story 1 : Tax level 500,001-1,000,000",
+			input: models.TaxCalculationInput{
+				TotalIncome: 1000000.0,
+				WHT:         0.0,
+				Allowances: []models.Allowance{
+					{},
+				},
+			},
+			wantResult: models.TaxCalculationResult{
+				Tax:        ((1000000 - 60000)-500000) * 0.15,
 				TaxRefund: 0,
 			},
 			wantErr: false,
@@ -122,6 +121,21 @@ func TestCalculateTax(t *testing.T) {
 			wantResult: models.TaxCalculationResult{
 				Tax:       154000.0,
 				TaxRefund: 0,
+			},
+			wantErr: false,
+		},
+		{
+			name: "Test Story 1 : Tax Refund",
+			input: models.TaxCalculationInput{
+				TotalIncome: 500000.0,
+				WHT:         40000.0,
+				Allowances: []models.Allowance{
+					{},
+				},
+			},
+			wantResult: models.TaxCalculationResult{
+				Tax:       0.0,
+				TaxRefund: 11000,
 			},
 			wantErr: false,
 		},
