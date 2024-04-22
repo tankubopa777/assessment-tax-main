@@ -17,9 +17,6 @@ func NewAdminHandler(adminRepo service.AdminRepository) *AdminHandler {
 	}
 }
 
-// อย่าลืม import ของแพคเกจที่จำเป็น เช่น "net/http" และ "github.com/labstack/echo/v4"
-
-// GetAdminSettings returns the admin settings to the client.
 func (h *AdminHandler) GetAdminSettings(c echo.Context) error {
 	settings, err := h.adminRepo.GetAdminSettings()
 	if err != nil {
