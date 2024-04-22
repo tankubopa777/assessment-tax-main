@@ -3,16 +3,16 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/KKGo-Software-engineering/assessment-tax/module/models"
-	"github.com/KKGo-Software-engineering/assessment-tax/module/repository"
 	"github.com/labstack/echo/v4"
+	"github.com/tankubopa777/assessment-tax/module/models"
+	"github.com/tankubopa777/assessment-tax/module/service"
 )
 
 type TaxHandler struct {
-	repo repository.TaxRepository
+	repo service.TaxRepository
 }
 
-func NewTaxHandler(repo repository.TaxRepository) *TaxHandler {
+func NewTaxHandler(repo service.TaxRepository) *TaxHandler {
 	return &TaxHandler{
 		repo: repo,
 	}

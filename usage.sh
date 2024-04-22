@@ -54,12 +54,56 @@ curl -X POST http://localhost:5050/tax/calculations \
 curl -X POST http://localhost:5050/tax/calculations \
 -H "Content-Type: application/json" \
 -d '{
-  "totalIncome": 500000.0,
-  "wht": 0.0,
+  "totalIncome": 1660000.0,
+  "wht": 20000.0,
   "allowances": [
     {
       "allowanceType": "donation",
       "amount": 100000.0
+    }
+  ]
+}'
+
+curl -X POST http://localhost:5050/tax/calculations \
+-H "Content-Type: application/json" \
+-d '{
+  "totalIncome": 500000.0,
+  "wht": 30000.0,
+  "allowances": [
+    {
+      "allowanceType": "k-receipt",
+      "amount": 0.0
+    }
+  ]
+}'
+
+
+curl -X POST http://localhost:5050/tax/calculations \
+-H "Content-Type: application/json" \
+-d '{
+  "totalIncome": 9900000.0,
+  "wht": 25000.0,
+  "allowances": [
+    {
+      "allowanceType": "donation",
+      "amount": 0.0
+    }
+  ]
+}'
+
+curl -X POST http://localhost:5050/tax/calculations \
+-H "Content-Type: application/json" \
+-d '{
+  "totalIncome": 500000.0,
+  "wht": 0.0,
+  "allowances": [
+    {
+      "allowanceType": "k-receipt",
+      "amount": 100000.0
+    },
+    {
+      "allowanceType": "donation",
+      "amount": 200000.0
     }
   ]
 }'

@@ -3,15 +3,15 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/KKGo-Software-engineering/assessment-tax/module/repository"
 	"github.com/labstack/echo/v4"
+	"github.com/tankubopa777/assessment-tax/module/service"
 )
 
 type AdminHandler struct {
-	adminRepo repository.AdminRepository
+	adminRepo service.AdminRepository
 }
 
-func NewAdminHandler(adminRepo repository.AdminRepository) *AdminHandler {
+func NewAdminHandler(adminRepo service.AdminRepository) *AdminHandler {
 	return &AdminHandler{
 		adminRepo: adminRepo,
 	}
