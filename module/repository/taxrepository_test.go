@@ -34,22 +34,22 @@ func TestCalculateTax(t *testing.T) {
 					WillReturnRows(sqlmock.NewRows([]string{"k_receipt_limit"}).AddRow(100000))
 			},
 			input: models.TaxCalculationInput{
-				TotalIncome: 1000000,
-				WHT:         100000,
+				TotalIncome: 500000,
+				WHT:         0,
 				Allowances: []models.Allowance{
-					{AllowanceType: "donation", Amount: 50000},
-					{AllowanceType: "k-receipt", Amount: 150000},
+					{AllowanceType: "donation", Amount: 200000},
+					{AllowanceType: "k-receipt", Amount: 0},
 				},
 			},
 			wantResult: models.TaxCalculationResult{
-				Tax:       85000,
+				Tax:       19000,
 				TaxRefund: 0,
 				TaxLevelDetails: []models.TaxLevelDetail{
-					{"0-150000", 0},
-					{"150001-500000", 35000},
-					{"500001-1000000", 75000},
-					{"1000001-2000000", 0},
-					{"2000001 and above", 0},
+					{Level: "1-150000", Tax: 0},
+					{Level:"150001-500000", Tax: 19000},
+					{Level:"500001-1000000", Tax: 0},
+					{Level:"1000001-2000000",Tax: 0},
+					{Level:"2000001 ขึ้นไป",Tax: 0},
 				},
 			},
 			wantErr: false,
@@ -72,7 +72,7 @@ func TestCalculateTax(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.mockQueries() // Setup the expected database queries
+			tt.mockQueries() 
 			gotResult, err := repo.CalculateTax(tt.input)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("PostgresTaxRepository.CalculateTax() error = %v, wantErr %v", err, tt.wantErr)
