@@ -3,6 +3,7 @@ package repository
 import (
 	"database/sql"
 	"fmt"
+	"math"
 
 	"github.com/tankubopa777/assessment-tax/module/models"
 )
@@ -86,7 +87,6 @@ func (r *PostgresTaxRepository) CalculateTax(input models.TaxCalculationInput) (
             Level: bracket.String(),
             Tax:   taxForBracket,
         }
-        fmt.Println(taxForBracket)
     }
 
     if lastTaxedIndex != -1 {
@@ -94,7 +94,7 @@ func (r *PostgresTaxRepository) CalculateTax(input models.TaxCalculationInput) (
         if adjustedTax < 0 {
             adjustedTax = 0
         }
-        taxDetails[lastTaxedIndex].Tax = adjustedTax
+        taxDetails[lastTaxedIndex].Tax = math.Round(adjustedTax * 1000) / 1000
     }
 
     finalTax := totalTax - input.WHT   
@@ -105,7 +105,7 @@ func (r *PostgresTaxRepository) CalculateTax(input models.TaxCalculationInput) (
     }
 
     return models.TaxCalculationResult{
-        Tax:             finalTax,
+        Tax:             (math.Round(finalTax * 1000)) / 1000,
         TaxRefund:       taxRefund,
         TaxLevelDetails: taxDetails,
     }, nil
