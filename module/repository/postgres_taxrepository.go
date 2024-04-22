@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"math"
 
 	"github.com/tankubopa777/assessment-tax/module/models"
 )
@@ -51,7 +52,7 @@ func (r *PostgresTaxRepository) CalculateTax(input models.TaxCalculationInput) (
     }
 
     return models.TaxCalculationResult{
-        Tax:       finalTax,
+        Tax:       (math.Round(finalTax * 1000)) * 1000,
         TaxRefund: taxRefund,
     }, nil
 }
