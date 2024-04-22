@@ -75,6 +75,8 @@ func (r *PostgresTaxRepository) CalculateTax(input models.TaxCalculationInput) (
         taxForBracket := 0.0
 
         if taxableIncome > lowerBound && incomeInBracket > 0 {
+            fmt.Println(incomeInBracket)
+            fmt.Println(bracket.Rate)
             taxForBracket = incomeInBracket * bracket.Rate
             totalTax += taxForBracket
             lastTaxedIndex = i
@@ -84,6 +86,7 @@ func (r *PostgresTaxRepository) CalculateTax(input models.TaxCalculationInput) (
             Level: bracket.String(),
             Tax:   taxForBracket,
         }
+        fmt.Println(taxForBracket)
     }
 
     if lastTaxedIndex != -1 {
