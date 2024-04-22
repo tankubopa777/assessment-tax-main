@@ -48,6 +48,7 @@ func (r *PostgresTaxRepository) CalculateTax(input models.TaxCalculationInput) (
 
     var totalTax float64
     taxDetails := make([]models.TaxLevelDetail, len(taxBrackets))
+    lastTaxedIndex := -1
 
     for i, bracket := range taxBrackets {
         upperLimit := float64(bracket.UpperBound)
@@ -64,6 +65,7 @@ func (r *PostgresTaxRepository) CalculateTax(input models.TaxCalculationInput) (
         if taxableIncome > lowerBound && incomeInBracket > 0 {
             taxForBracket = incomeInBracket * bracket.Rate
             totalTax += taxForBracket
+            lastTaxedIndex = i
         }
 
         taxDetails[i] = models.TaxLevelDetail{
@@ -72,7 +74,15 @@ func (r *PostgresTaxRepository) CalculateTax(input models.TaxCalculationInput) (
         }
     }
 
-    finalTax := totalTax - input.WHT
+    if lastTaxedIndex != -1 {
+        adjustedTax := taxDetails[lastTaxedIndex].Tax - input.WHT
+        if adjustedTax < 0 {
+            adjustedTax = 0
+        }
+        taxDetails[lastTaxedIndex].Tax = adjustedTax
+    }
+
+    finalTax := totalTax - input.WHT   
     var taxRefund float64
     if finalTax < 0 {
         taxRefund = -finalTax

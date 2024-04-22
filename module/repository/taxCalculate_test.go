@@ -124,6 +124,85 @@ func TestCalculateTax(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "Test for income 500000 with WHT 30000",
+			input: models.TaxCalculationInput{
+				TotalIncome: 500000,
+				WHT:         30000.0,
+				Allowances:  []models.Allowance{},
+			},
+			wantResult: models.TaxCalculationResult{
+				Tax:       0,
+				TaxRefund: 1000,
+				TaxLevelDetails: []models.TaxLevelDetail{
+					{
+						Level: "1-150000",
+						Tax:   0,
+					},
+					{
+						Level: "150001-500000",
+						Tax:   0,
+					},
+					{
+						Level: "500001-1000000",
+						Tax:   0,
+					},
+					{
+						Level: "1000001-2000000",
+						Tax:   0,
+					},
+					{
+						Level: "2000001 ขึ้นไป",
+						Tax:   0,
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Test for income 500000 with donation 100000 and k-receipt 50000", 
+			input: models.TaxCalculationInput{
+				TotalIncome: 500000,
+				WHT:         0.0,
+				Allowances:  []models.Allowance{
+					{
+						AllowanceType: "donation",
+						Amount:        100000,
+					},
+					{
+						AllowanceType: "k-receipt",
+						Amount:        50000,
+					},
+				},
+			},
+			wantResult: models.TaxCalculationResult{
+				Tax:       14000,
+				TaxRefund: 0,
+				TaxLevelDetails: []models.TaxLevelDetail{
+					{
+						Level: "1-150000",
+						Tax:   0,
+					},
+					{
+						Level: "150001-500000",
+						Tax:   14000,
+					},
+					{
+						Level: "500001-1000000",
+						Tax:   0,
+					},
+					{
+						Level: "1000001-2000000",
+						Tax:   0,
+					},
+					{
+						Level: "2000001 ขึ้นไป",
+						Tax:   0,
+					},
+				},
+			},
+			wantErr: false,
+		},
 	}
 
 	for _, tt := range tests {
