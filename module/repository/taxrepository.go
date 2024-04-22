@@ -66,7 +66,6 @@ func (r *PostgresTaxRepository) CalculateTax(input models.TaxCalculationInput) (
             totalTax += taxForBracket
         }
 
-        // Populate the details for all brackets, even if tax is zero
         taxDetails[i] = models.TaxLevelDetail{
             Level: bracket.String(),
             Tax:   taxForBracket,
