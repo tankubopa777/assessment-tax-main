@@ -1,8 +1,13 @@
 package main
 
 import (
+	"context"
 	"log"
+	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
@@ -46,6 +51,25 @@ func main() {
 	adminGroup.GET("/settings", adminHandler.GetAdminSettings)
 	adminGroup.POST("/deductions/personal", adminHandler.SetPersonalDeduction) 
 	adminGroup.POST("/deductions/k-receipt-limit", adminHandler.SetKReceiptLimit) 
+	
+	// Graceful shutdown
+	go func() {
+		if err := e.Start(":5050"); err != nil && err != http.ErrServerClosed {
+			e.Logger.Fatal("shutting down the server", err)
+		}
+	}()
 
-	e.Logger.Fatal(e.Start(":5050"))
+	shutdown := make(chan os.Signal, 1)
+	signal.Notify(shutdown, os.Interrupt, syscall.SIGTERM)
+
+	<-shutdown
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if err := e.Shutdown(ctx); err != nil {
+		e.Logger.Fatal("shutting down the server failed", err)
+	}
+
+	log.Println("shutting down the server")
 }
