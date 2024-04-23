@@ -23,54 +23,83 @@ func NewPostgresTaxRepository(db *sql.DB) *PostgresTaxRepository {
 func (r *PostgresTaxRepository) CalculateTax(input models.TaxCalculationInput) (models.TaxCalculationResult, error) {
     taxBrackets := []models.TaxBracket{
         {LowerBound: 0, UpperBound: 150000, Rate: 0},
-        {LowerBound: 150001, UpperBound: 500000, Rate: 0.1},
-        {LowerBound: 500001, UpperBound: 1000000, Rate: 0.15},
-        {LowerBound: 1000001, UpperBound: 2000000, Rate: 0.2},
-        {LowerBound: 2000001, UpperBound: -1, Rate: 0.35},
+        {LowerBound: 150000, UpperBound: 500000, Rate: 0.1},
+        {LowerBound: 500000, UpperBound: 1000000, Rate: 0.15},
+        {LowerBound: 1000000, UpperBound: 2000000, Rate: 0.2},
+        {LowerBound: 2000000, UpperBound: -1, Rate: 0.35},
     }
 
-    var totalDeductions float64 = 60000 
+    var totalDeductions float64 = 60000
+    var donationDeduction float64 = 0
+    var kReceiptDeduction float64 = 0
+    var kReceiptLimit float64 = 0
+
+    err := r.db.QueryRow("SELECT personal_deduction FROM admin_settings WHERE id = 1").Scan(&totalDeductions)
+    if err != nil {
+        return models.TaxCalculationResult{}, fmt.Errorf("failed to fetch base deduction: %w", err)
+    }
+
+    err = r.db.QueryRow("SELECT k_receipt_limit FROM admin_settings WHERE id = 1").Scan(&kReceiptLimit)
+    if err != nil {
+        return models.TaxCalculationResult{}, fmt.Errorf("failed to fetch k-receipt limit: %w", err)
+    }
 
     for _, allowance := range input.Allowances {
-        if allowance.AllowanceType == "donation" {
-            totalDeductions += math.Min(allowance.Amount, 100000)
-        } else if allowance.AllowanceType == "k-receipt" {
-            totalDeductions += math.Min(allowance.Amount, 50000)
+        switch allowance.AllowanceType {
+        case "donation":
+            donationDeduction += allowance.Amount
+            if donationDeduction > 100000 {
+                donationDeduction = 100000
+            }
+        case "k-receipt":
+            kReceiptDeduction += allowance.Amount
+            if kReceiptDeduction > kReceiptLimit {
+                kReceiptDeduction = kReceiptLimit
+            }
         }
     }
+
+    totalDeductions += donationDeduction + kReceiptDeduction
 
     taxableIncome := input.TotalIncome - totalDeductions
-    fmt.Println("taxableIncome: ", taxableIncome)
-    var taxAmount float64
-    var taxDetails []models.TaxLevelDetail
 
-    for _, bracket := range taxBrackets {
-        levelDescription := fmt.Sprintf("%d-%d", bracket.LowerBound, bracket.UpperBound)
-        if bracket.UpperBound == -1 {
-            levelDescription = fmt.Sprintf("%d ขึ้นไป", bracket.LowerBound)
-        }
-        taxDetails = append(taxDetails, models.TaxLevelDetail{
-            Level: levelDescription,
-            Tax:   0,
-        })
-    }
+    var totalTax float64
+    taxDetails := make([]models.TaxLevelDetail, len(taxBrackets))
+    lastTaxedIndex := -1
 
     for i, bracket := range taxBrackets {
-        if taxableIncome > float64(bracket.LowerBound) && (bracket.UpperBound == -1 || taxableIncome <= float64(bracket.UpperBound)) {
-            taxAmount = (taxableIncome - (float64(bracket.LowerBound)-1)) * bracket.Rate
-            fmt.Println(float64(bracket.LowerBound))
-            fmt.Println("taxAmount: ", taxAmount)
-            if input.WHT > 0 {
-                taxDetails[i].Tax = math.Round(taxAmount) - input.WHT
-                break
-            }
-            taxDetails[i].Tax = math.Round(taxAmount)
-            break
+        upperLimit := float64(bracket.UpperBound)
+        if bracket.UpperBound == -1 {
+            upperLimit = taxableIncome
+        } else if taxableIncome < upperLimit {
+            upperLimit = taxableIncome
+        }
+
+        lowerBound := float64(bracket.LowerBound)
+        incomeInBracket := upperLimit - lowerBound
+        taxForBracket := 0.0
+
+        if taxableIncome > lowerBound && incomeInBracket > 0 {
+            taxForBracket = incomeInBracket * bracket.Rate
+            totalTax += taxForBracket
+            lastTaxedIndex = i
+        }
+
+        taxDetails[i] = models.TaxLevelDetail{
+            Level: bracket.String(),
+            Tax:   taxForBracket,
         }
     }
 
-    finalTax := taxAmount - input.WHT
+    if lastTaxedIndex != -1 {
+        adjustedTax := taxDetails[lastTaxedIndex].Tax - input.WHT
+        if adjustedTax < 0 {
+            adjustedTax = 0
+        }
+        taxDetails[lastTaxedIndex].Tax = math.Round(adjustedTax * 1000) / 1000
+    }
 
+    finalTax := totalTax - input.WHT   
     var taxRefund float64
     if finalTax < 0 {
         taxRefund = -finalTax
@@ -78,41 +107,10 @@ func (r *PostgresTaxRepository) CalculateTax(input models.TaxCalculationInput) (
     }
 
     return models.TaxCalculationResult{
-        Tax:            finalTax,
-        TaxRefund:      taxRefund,
+        Tax:             (math.Round(finalTax * 1000)) / 1000,
+        TaxRefund:       taxRefund,
         TaxLevelDetails: taxDetails,
     }, nil
-}
-
-func (r *PostgresTaxRepository) UploadTaxCalculations (input models.TaxCalculationInput, result models.TaxCalculationResult) error {
-    return nil
-}
-
-type PostgresAdminRepository struct {
-	db *sql.DB
-}
-
-func NewPostgresAdminRepository(db *sql.DB) *PostgresAdminRepository {
-	return &PostgresAdminRepository{db: db}
-}
-
-func (r *PostgresAdminRepository) GetAdminSettings() (models.AdminSettings, error) {
-    settings := models.AdminSettings{}
-    err := r.db.QueryRow("SELECT personal_deduction, k_receipt_limit FROM admin_settings WHERE id = 1").Scan(&settings.PersonalDeduction, &settings.KReceiptLimit)
-    if err != nil {
-        return settings, err
-    }
-    return settings, nil
-}
-
-func (r *PostgresAdminRepository) SetPersonalDeduction(deduction float64) error {
-    _, err := r.db.Exec("UPDATE admin_settings SET personal_deduction = $1 WHERE id = 1", deduction)
-    return err
-}
-
-func (r *PostgresAdminRepository) SetKReceiptLimit(limit float64) error {
-    _, err := r.db.Exec("UPDATE admin_settings SET k_receipt_limit = $1 WHERE id = 1", limit)
-    return err
 }
 
 func (r *PostgresTaxRepository) TaxCalculationsFromCSV(filePath string) ([]models.CSVTaxCalculationResult, error) {
@@ -125,7 +123,6 @@ func (r *PostgresTaxRepository) TaxCalculationsFromCSV(filePath string) ([]model
     csvReader := csv.NewReader(file)
     var results []models.CSVTaxCalculationResult
 
-    // Read the header first to skip it but also to check if the CSV is correctly formatted
     headers, err := csvReader.Read()
     if err != nil {
         return nil, err
@@ -198,4 +195,9 @@ func calculateTax(taxableIncome float64) float64 {
 	}
 	return tax
 }
+
+func (r *PostgresTaxRepository) UploadTaxCalculations (input models.TaxCalculationInput, result models.TaxCalculationResult) error {
+    return nil
+}
+
 
