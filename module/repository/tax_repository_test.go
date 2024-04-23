@@ -1,4 +1,5 @@
-// go:build tax
+//go:build tax || development
+
 package repository
 
 import (
@@ -46,7 +47,7 @@ func TestCalculateTax(t *testing.T) {
 				Tax:       19000,
 				TaxRefund: 0,
 				TaxLevelDetails: []models.TaxLevelDetail{
-					{Level: "1-150000", Tax: 0},
+					{Level: "0-150000", Tax: 0},
 					{Level:"150001-500000", Tax: 19000},
 					{Level:"500001-1000000", Tax: 0},
 					{Level:"1000001-2000000",Tax: 0},

@@ -1,3 +1,5 @@
+//go:build admin || development
+
 package repository
 
 import (
