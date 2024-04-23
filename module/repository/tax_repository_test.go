@@ -1,4 +1,4 @@
-//go:build tax || development
+//go:build development || tax
 
 package repository
 

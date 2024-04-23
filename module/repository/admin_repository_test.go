@@ -1,4 +1,4 @@
-//go:build admin || development
+//go:build development || admin
 
 package repository
 
