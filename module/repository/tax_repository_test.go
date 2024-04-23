@@ -1,3 +1,4 @@
+// go:build tax
 package repository
 
 import (
@@ -10,7 +11,7 @@ import (
 )
 
 func TestCalculateTax(t *testing.T) {
-	db, mock, err := sqlmock.New() // Create a new instance of sqlmock
+	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
