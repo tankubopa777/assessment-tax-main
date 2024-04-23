@@ -48,5 +48,5 @@ func main() {
 	if err := e.Shutdown(ctx); err != nil {
 		e.Logger.Fatal(err)
 	}
-	log.Println("Shutting down the server...")
+	log.Println("shutting down the server")
 }
