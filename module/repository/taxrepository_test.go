@@ -28,7 +28,6 @@ func TestCalculateTax(t *testing.T) {
 			},
 			wantResult: models.TaxCalculationResult{
 				Tax:       50000,
-				TaxRefund: 0,
 				TaxLevelDetails: []models.TaxLevelDetail{
 					{
 						Level: "1-150000",
@@ -63,7 +62,6 @@ func TestCalculateTax(t *testing.T) {
 			},
 			wantResult: models.TaxCalculationResult{
 				Tax:       4000,
-				TaxRefund: 0,
 				TaxLevelDetails: []models.TaxLevelDetail{
 					{
 						Level: "1-150000",
@@ -98,7 +96,6 @@ func TestCalculateTax(t *testing.T) {
 			},
 			wantResult: models.TaxCalculationResult{
 				Tax:       50000,
-				TaxRefund: 0,
 				TaxLevelDetails: []models.TaxLevelDetail{
 					{
 						Level: "1-150000",
@@ -133,7 +130,6 @@ func TestCalculateTax(t *testing.T) {
 			},
 			wantResult: models.TaxCalculationResult{
 				Tax:       0,
-				TaxRefund: 1000,
 				TaxLevelDetails: []models.TaxLevelDetail{
 					{
 						Level: "1-150000",
@@ -177,7 +173,6 @@ func TestCalculateTax(t *testing.T) {
 			},
 			wantResult: models.TaxCalculationResult{
 				Tax:       14000,
-				TaxRefund: 0,
 				TaxLevelDetails: []models.TaxLevelDetail{
 					{
 						Level: "1-150000",
@@ -221,7 +216,6 @@ func TestCalculateTax(t *testing.T) {
 			},
 			wantResult: models.TaxCalculationResult{
 				Tax:       14000,
-				TaxRefund: 0,
 				TaxLevelDetails: []models.TaxLevelDetail{
 					{
 						Level: "1-150000",
@@ -265,7 +259,6 @@ func TestCalculateTax(t *testing.T) {
 			},
 			wantResult: models.TaxCalculationResult{
 				Tax:       14000,
-				TaxRefund: 0,
 				TaxLevelDetails: []models.TaxLevelDetail{
 					{
 						Level: "1-150000",
