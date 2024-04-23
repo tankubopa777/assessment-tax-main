@@ -24,6 +24,16 @@ func (h *TaxHandler) CalculateTax(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid input")
 	}
 
+
+	if input.WHT < 0 {
+		return echo.NewHTTPError(http.StatusBadRequest, "WHT must be greater than or equal to 0")
+	}
+
+	if input.WHT > input.TotalIncome {
+		return echo.NewHTTPError(http.StatusBadRequest, "WHT must be less than or equal to total income")
+	}
+	
+
 	result, err := h.repo.CalculateTax(input)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Error calculating tax")
