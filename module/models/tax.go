@@ -20,9 +20,10 @@ type TaxCalculationInput struct {
 }
 
 type TaxCalculationResult struct {
-	Tax             float64 `json:"tax"`
-	TaxRefund       float64 `json:"taxRefund"`
 	TaxLevelDetails []TaxLevelDetail `json:"taxLevel"`
+    Tax             float64 `json:"tax,omitempty"`         
+    TaxRefund       float64 `json:"taxRefund,omitempty"`   
+    TaxLevelDetails []TaxLevelDetail `json:"taxLevel,omitempty"`
 }
 
 type TaxLevelDetail struct {
