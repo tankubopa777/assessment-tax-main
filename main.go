@@ -1,8 +1,12 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"time"
 
 	"github.com/KKGo-Software-engineering/assessment-tax/module/config"
 	"github.com/KKGo-Software-engineering/assessment-tax/module/handlers"
@@ -29,5 +33,21 @@ func main() {
 
 	e.POST("/tax/calculations", taxHandler.CalculateTax)
 
-	e.Logger.Fatal(e.Start(":5050"))
+	go func() {
+		if err := e.Start(":5050"); err != nil && err != http.ErrServerClosed {
+			e.Logger.Fatal("shutting down the server")
+		}
+	}()
+
+	shutdown := make(chan os.Signal, 1)
+	signal.Notify(shutdown, os.Interrupt, os.Kill)
+	<-shutdown
+
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
+	if err := e.Shutdown(ctx); err != nil {
+		e.Logger.Fatal(err)
+	}
+	log.Println("shutting down the server")
 }
