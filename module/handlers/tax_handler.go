@@ -48,10 +48,9 @@ func (h *TaxHandler) UploadTaxCalculations(c echo.Context) error {
 	}
 	defer src.Close()
 
-	// Save the file to a temporary directory
 	tempDir := "uploads"
 	if _, err := os.Stat(tempDir); os.IsNotExist(err) {
-		os.Mkdir(tempDir, 0755) // Make sure the directory exists
+		os.Mkdir(tempDir, 0755)
 	}
 
 	tempFilePath := filepath.Join(tempDir, fileHeader.Filename)
@@ -65,13 +64,11 @@ func (h *TaxHandler) UploadTaxCalculations(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to copy the file data.")
 	}
 
-	// Now that the file is saved, pass the file path to the repository method
 	results, err := h.repo.TaxCalculationsFromCSV(tempFilePath)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("Failed to process the CSV file: %v", err))
 	}
 
-	// Optionally delete the file after processing if it's no longer needed
 	os.Remove(tempFilePath)
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
