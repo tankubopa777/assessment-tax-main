@@ -71,5 +71,5 @@ func main() {
 		e.Logger.Fatal("shutting down the server failed", err)
 	}
 
-	log.Println("Server gracefully shutdown")
+	log.Println("shutting down the server")
 }
