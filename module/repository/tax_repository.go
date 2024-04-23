@@ -152,15 +152,28 @@ func (r *PostgresTaxRepository) TaxCalculationsFromCSV(filePath string) ([]model
         if err != nil {
             return nil, fmt.Errorf("error parsing donation: %v", err)
         }
-
+        
+        taxRefund := 0.0
 
         taxableIncome := totalIncome - (60000 + donation) 
-        tax := calculateTax(taxableIncome - wht) 
+        tax := calculateTax(taxableIncome) - wht
 
+        if tax < 0 {
+            taxRefund = -tax
+            tax = 0
+        }
+
+        if taxRefund > 0 {
+            results = append(results, models.CSVTaxCalculationResult{
+                TotalIncome: totalIncome,
+                TaxRefund:  taxRefund,
+            })
+        } else {
         results = append(results, models.CSVTaxCalculationResult{
             TotalIncome: totalIncome,
             Tax:         tax,
         })
+    }
     }
 
     return results, nil
@@ -169,35 +182,32 @@ func (r *PostgresTaxRepository) TaxCalculationsFromCSV(filePath string) ([]model
 
 func calculateTax(taxableIncome float64) float64 {
 	taxBrackets := []models.TaxBracket{
-		{LowerBound: 0, UpperBound: 150000, Rate: 0},
-		{LowerBound: 150001, UpperBound: 500000, Rate: 0.1},
-		{LowerBound: 500001, UpperBound: 1000000, Rate: 0.15},
-		{LowerBound: 1000001, UpperBound: 2000000, Rate: 0.2},
-		{LowerBound: 2000001, UpperBound: -1, Rate: 0.35},
-	}
+        {LowerBound: 150000, UpperBound: 500000, Rate: 0.1},
+        {LowerBound: 500000, UpperBound: 1000000, Rate: 0.15},
+        {LowerBound: 1000000, UpperBound: 2000000, Rate: 0.2},
+        {LowerBound: 2000000, UpperBound: -1, Rate: 0.35},
+    }
 
-	var tax float64
-	for _, bracket := range taxBrackets {
-		if taxableIncome <= float64(bracket.LowerBound) {
-			continue
-		}
-		upperBound := float64(bracket.UpperBound)
-		if bracket.UpperBound == -1 {
-			upperBound = taxableIncome
-		}
+	var totalTax float64
+    for _, bracket := range taxBrackets {
+        if taxableIncome > float64(bracket.LowerBound) {
+            upperLimit := float64(bracket.UpperBound)
+            if bracket.UpperBound == -1 {
+                upperLimit = taxableIncome
+            } else if taxableIncome < upperLimit {
+                upperLimit = taxableIncome
+            }
 
-		if taxableIncome > upperBound {
-			tax += (upperBound - float64(bracket.LowerBound)) * bracket.Rate
-		} else {
-			tax += (taxableIncome - float64(bracket.LowerBound)) * bracket.Rate
-			break
-		}
-	}
-	return tax
+            incomeInBracket := upperLimit - float64(bracket.LowerBound)
+
+            taxForBracket := incomeInBracket * bracket.Rate
+            totalTax += taxForBracket
+        }
+    }
+    return (math.Round(totalTax* 1000)) / 1000
 }
 
 func (r *PostgresTaxRepository) UploadTaxCalculations (input models.TaxCalculationInput, result models.TaxCalculationResult) error {
     return nil
 }
-
 

@@ -42,7 +42,8 @@ func (tb TaxBracket) String() string {
 
 type CSVTaxCalculationResult struct {
 	TotalIncome float64 `json:"totalIncome"`
-	Tax         float64 `json:"tax"`
+	Tax         float64 `json:"tax,omitempty"`
+	TaxRefund       float64 `json:"taxRefund,omitempty"`   
 }
 
 
