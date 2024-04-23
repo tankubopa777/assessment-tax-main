@@ -30,7 +30,6 @@ func TestCalculateTax(t *testing.T) {
 			},
 			wantResult: models.TaxCalculationResult{
 				Tax:       29000,
-				TaxRefund: 0,
 			},
 			wantErr: false,
 		},
@@ -43,7 +42,6 @@ func TestCalculateTax(t *testing.T) {
 			},
 			wantResult: models.TaxCalculationResult{
 				Tax:       0.0,
-				TaxRefund: 0,
 			},
 			wantErr: false,
 		},
@@ -56,7 +54,6 @@ func TestCalculateTax(t *testing.T) {
 			},
 			wantResult: models.TaxCalculationResult{
 				Tax:         50000, 
-				TaxRefund: 0,
 			},
 			wantErr: false,
 		},
@@ -69,7 +66,6 @@ func TestCalculateTax(t *testing.T) {
 			},
 			wantResult: models.TaxCalculationResult{
 				Tax:         101000, 
-				TaxRefund: 0,
 			},
 			wantErr: false,
 		},
@@ -82,7 +78,6 @@ func TestCalculateTax(t *testing.T) {
 			},
 			wantResult: models.TaxCalculationResult{
 				Tax:       198000,
-				TaxRefund: 0,
 			},
 			wantErr: false,
 		},
@@ -95,7 +90,6 @@ func TestCalculateTax(t *testing.T) {
 			},
 			wantResult: models.TaxCalculationResult{
 				Tax:       464000,
-				TaxRefund: 0,
 			},
 			wantErr: false,
 		},
@@ -107,7 +101,6 @@ func TestCalculateTax(t *testing.T) {
 				Allowances: []models.Allowance{},
 			},
 			wantResult: models.TaxCalculationResult{
-				Tax:       0.0,
 				TaxRefund: 40000 - 29000, 
 			},
 			wantErr: false,
