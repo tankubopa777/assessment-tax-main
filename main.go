@@ -4,12 +4,12 @@ import (
 	"log"
 	"os"
 
-	"github.com/KKGo-Software-engineering/assessment-tax/module/config"
-	"github.com/KKGo-Software-engineering/assessment-tax/module/handlers"
-	"github.com/KKGo-Software-engineering/assessment-tax/module/repository"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/tankubopa777/assessment-tax/module/config"
+	"github.com/tankubopa777/assessment-tax/module/handlers"
+	"github.com/tankubopa777/assessment-tax/module/repository"
 )
 
 func main() {
