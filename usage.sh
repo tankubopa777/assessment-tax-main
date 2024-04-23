@@ -107,3 +107,7 @@ curl -X POST http://localhost:5050/tax/calculations \
     }
   ]
 }'
+
+curl -X POST http://localhost:5050/tax/calculations/upload-csv \
+     -F "taxFile=@/tax.csv" \
+     -H "Content-Type: multipart/form-data"
