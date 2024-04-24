@@ -81,7 +81,6 @@ func TestAdminRepository(t *testing.T) {
         },
     }
 
-    // Run the tests
     for _, tc := range tests {
         t.Run(tc.name, func(t *testing.T) {
             tc.test()
@@ -89,7 +88,6 @@ func TestAdminRepository(t *testing.T) {
         })
     }
 
-    // Verify all expectations were met
     if err := mock.ExpectationsWereMet(); err != nil {
         t.Errorf("there were unfulfilled expectations: %s", err)
     }
