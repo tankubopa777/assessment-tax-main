@@ -20,24 +20,31 @@ type TaxCalculationInput struct {
 }
 
 type TaxCalculationResult struct {
-	Tax             float64 `json:"tax"`
-	TaxRefund       float64
-	TaxLevelDetails []TaxLevelDetail `json:"taxLevel"`
+    Tax             float64 `json:"tax,omitempty"`         
+    TaxRefund       float64 `json:"taxRefund,omitempty"`   
+    TaxLevelDetails []TaxLevelDetail `json:"taxLevel,omitempty"`
 }
-
 type TaxLevelDetail struct {
 	Level string `json:"level"`
 	Tax   float64 `json:"tax"`
 }
 
 func (tb TaxBracket) String() string {
-	if tb.UpperBound == -1 {
-		return fmt.Sprintf("%d ขึ้นไป", tb.LowerBound)
+	if tb.UpperBound == 150000 {
+		return fmt.Sprintf("%d-%d", tb.LowerBound, tb.UpperBound)
 	}
-	return fmt.Sprintf("%d-%d", tb.LowerBound, tb.UpperBound)
+    if tb.UpperBound == -1 {
+        return fmt.Sprintf("%d ขึ้นไป", tb.LowerBound + 1)
+    }
+    return fmt.Sprintf("%d-%d", tb.LowerBound + 1, tb.UpperBound)
 }
+
 
 type CSVTaxCalculationResult struct {
 	TotalIncome float64 `json:"totalIncome"`
-	Tax         float64 `json:"tax"`
+	Tax         float64 `json:"tax,omitempty"`
+	TaxRefund       float64 `json:"taxRefund,omitempty"`   
 }
+
+
+

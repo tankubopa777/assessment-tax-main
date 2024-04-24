@@ -1,7 +1,7 @@
-package repository
+package service
 
 import (
-	"github.com/KKGo-Software-engineering/assessment-tax/module/models"
+	"github.com/tankubopa777/assessment-tax/module/models"
 )
 
 type TaxRepository interface {

@@ -3,20 +3,19 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/KKGo-Software-engineering/assessment-tax/module/repository"
 	"github.com/labstack/echo/v4"
+	"github.com/tankubopa777/assessment-tax/module/service"
 )
 
 type AdminHandler struct {
-	adminRepo repository.AdminRepository
+	adminRepo service.AdminRepository
 }
 
-func NewAdminHandler(adminRepo repository.AdminRepository) *AdminHandler {
+func NewAdminHandler(adminRepo service.AdminRepository) *AdminHandler {
 	return &AdminHandler{
 		adminRepo: adminRepo,
 	}
 }
-
 
 func (h *AdminHandler) GetAdminSettings(c echo.Context) error {
 	settings, err := h.adminRepo.GetAdminSettings()
@@ -28,11 +27,19 @@ func (h *AdminHandler) GetAdminSettings(c echo.Context) error {
 
 func (h *AdminHandler) SetPersonalDeduction(c echo.Context) error {
 	var request struct {
-		Deduction float64 `json:"personalDeduction"`
+		Deduction float64 `json:"amount"`
 	}
 
 	if err := c.Bind(&request); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid input")
+	}
+
+	if request.Deduction > 100000 {
+		return echo.NewHTTPError(http.StatusBadRequest, "Personal deduction cannot exceed 100,000 THB")
+	}
+
+	if request.Deduction < 10000 {
+		return echo.NewHTTPError(http.StatusBadRequest, "Personal deduction cannot be less than 10,000 THB")
 	}
 
 	err := h.adminRepo.SetPersonalDeduction(request.Deduction)
@@ -40,17 +47,25 @@ func (h *AdminHandler) SetPersonalDeduction(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Error updating personal deduction")
 	}
 	return c.JSON(http.StatusOK, map[string]interface{}{
-		"message": "Personal deduction updated successfully",
+		"personalDeduction": request.Deduction,
 	})
 }
 
 func (h *AdminHandler) SetKReceiptLimit(c echo.Context) error {
 	var request struct {
-		Limit float64 `json:"kReceiptLimit"`
+		Limit float64 `json:"amount"`
 	}
 
 	if err := c.Bind(&request); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid input")
+	}
+
+	if request.Limit > 100000 {
+		return echo.NewHTTPError(http.StatusBadRequest, "K-receipt limit cannot exceed 100,000 THB")
+	}
+
+	if request.Limit <= 0 {
+		return echo.NewHTTPError(http.StatusBadRequest, "K-receipt limit must be greater than 0")
 	}
 
 	err := h.adminRepo.SetKReceiptLimit(request.Limit)
@@ -58,6 +73,6 @@ func (h *AdminHandler) SetKReceiptLimit(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Error updating K-receipt limit")
 	}
 	return c.JSON(http.StatusOK, map[string]interface{}{
-		"message": "K-receipt limit updated successfully",
+		"kReceipt": request.Limit,
 	})
 }

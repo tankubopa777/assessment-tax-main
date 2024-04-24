@@ -7,16 +7,16 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/KKGo-Software-engineering/assessment-tax/module/models"
-	"github.com/KKGo-Software-engineering/assessment-tax/module/repository"
 	"github.com/labstack/echo/v4"
+	"github.com/tankubopa777/assessment-tax/module/models"
+	"github.com/tankubopa777/assessment-tax/module/service"
 )
 
 type TaxHandler struct {
-	repo repository.TaxRepository
+	repo service.TaxRepository
 }
 
-func NewTaxHandler(repo repository.TaxRepository) *TaxHandler {
+func NewTaxHandler(repo service.TaxRepository) *TaxHandler {
 	return &TaxHandler{
 		repo: repo,
 	}
@@ -48,7 +48,6 @@ func (h *TaxHandler) UploadTaxCalculations(c echo.Context) error {
 	}
 	defer src.Close()
 
-	
 	tempDir := "uploads"
 	if _, err := os.Stat(tempDir); os.IsNotExist(err) {
 		os.Mkdir(tempDir, 0755)
@@ -65,13 +64,11 @@ func (h *TaxHandler) UploadTaxCalculations(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to copy the file data.")
 	}
 
-	// Now that the file is saved, pass the file path to the repository method
 	results, err := h.repo.TaxCalculationsFromCSV(tempFilePath)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("Failed to process the CSV file: %v", err))
 	}
 
-	// Optionally delete the file after processing if it's no longer needed
 	os.Remove(tempFilePath)
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
