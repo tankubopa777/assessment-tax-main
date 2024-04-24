@@ -1,4 +1,4 @@
-package repository
+package service
 
 import (
 	"github.com/tankubopa777/assessment-tax/module/models"
@@ -6,6 +6,7 @@ import (
 
 type TaxRepository interface {
 	CalculateTax(input models.TaxCalculationInput) (models.TaxCalculationResult, error)
+	TaxCalculationsFromCSV(file string) ([]models.CSVTaxCalculationResult, error)
 }
 
 type AdminRepository interface {

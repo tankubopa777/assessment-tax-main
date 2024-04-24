@@ -1,18 +1,22 @@
 package handlers
 
 import (
+	"fmt"
+	"io"
 	"net/http"
+	"os"
+	"path/filepath"
 
 	"github.com/labstack/echo/v4"
 	"github.com/tankubopa777/assessment-tax/module/models"
-	"github.com/tankubopa777/assessment-tax/module/repository"
+	"github.com/tankubopa777/assessment-tax/module/service"
 )
 
 type TaxHandler struct {
-	repo repository.TaxRepository
+	repo service.TaxRepository
 }
 
-func NewTaxHandler(repo repository.TaxRepository) *TaxHandler {
+func NewTaxHandler(repo service.TaxRepository) *TaxHandler {
 	return &TaxHandler{
 		repo: repo,
 	}
@@ -30,4 +34,44 @@ func (h *TaxHandler) CalculateTax(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, result)
+}
+
+func (h *TaxHandler) UploadTaxCalculations(c echo.Context) error {
+	fileHeader, err := c.FormFile("taxFile")
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Failed to retrieve the file from the form data.")
+	}
+
+	src, err := fileHeader.Open()
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to open the file.")
+	}
+	defer src.Close()
+
+	tempDir := "uploads"
+	if _, err := os.Stat(tempDir); os.IsNotExist(err) {
+		os.Mkdir(tempDir, 0755)
+	}
+
+	tempFilePath := filepath.Join(tempDir, fileHeader.Filename)
+	dst, err := os.Create(tempFilePath)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to create a file for processing.")
+	}
+	defer dst.Close()
+
+	if _, err = io.Copy(dst, src); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to copy the file data.")
+	}
+
+	results, err := h.repo.TaxCalculationsFromCSV(tempFilePath)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("Failed to process the CSV file: %v", err))
+	}
+
+	os.Remove(tempFilePath)
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"taxes": results,
+	})
 }
