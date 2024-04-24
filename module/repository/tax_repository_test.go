@@ -107,6 +107,56 @@ func TestCalculateTax(t *testing.T) {
             },
             wantErr: false,
         },
+		{
+            name: "WHT Greater Than Tax in Last Bracket",
+            mockQueries: func() {
+                mock.ExpectQuery("SELECT personal_deduction FROM admin_settings WHERE id = 1").
+                    WillReturnRows(sqlmock.NewRows([]string{"personal_deduction"}).AddRow(60000))
+                mock.ExpectQuery("SELECT k_receipt_limit FROM admin_settings WHERE id = 1").
+                    WillReturnRows(sqlmock.NewRows([]string{"k_receipt_limit"}).AddRow(100000))
+            },
+            input: models.TaxCalculationInput{
+                TotalIncome: 300000,  
+                WHT:         50000,  
+                Allowances:  []models.Allowance{},
+            },
+            wantResult: models.TaxCalculationResult{
+                Tax: 0,  
+                TaxRefund: 41000,
+                TaxLevelDetails: []models.TaxLevelDetail{ 
+					{Level: "0-150000", Tax: 0},
+					{Level:"150001-500000", Tax: 0},
+					{Level:"500001-1000000", Tax: 0},
+					{Level:"1000001-2000000",Tax: 0},
+					{Level:"2000001 ขึ้นไป",Tax: 0},
+				 },
+            },
+            wantErr: false,
+        },{
+            name: "Total WHT Exceeds Total Calculated Tax",
+            mockQueries: func() {
+                mock.ExpectQuery("SELECT personal_deduction FROM admin_settings WHERE id = 1").
+                    WillReturnRows(sqlmock.NewRows([]string{"personal_deduction"}).AddRow(60000))
+                mock.ExpectQuery("SELECT k_receipt_limit FROM admin_settings WHERE id = 1").
+                    WillReturnRows(sqlmock.NewRows([]string{"k_receipt_limit"}).AddRow(100000))
+            },
+            input: models.TaxCalculationInput{
+                TotalIncome: 700000,  
+                WHT:         120000,  
+                Allowances:  []models.Allowance{},
+            },
+            wantResult: models.TaxCalculationResult{
+                Tax: 0,
+                TaxRefund: 64000,
+                TaxLevelDetails: []models.TaxLevelDetail{ 
+				{Level: "0-150000", Tax: 0},
+				{Level:"150001-500000", Tax: 35000},
+				{Level:"500001-1000000", Tax: 0},
+				{Level:"1000001-2000000",Tax: 0},
+				{Level:"2000001 ขึ้นไป",Tax: 0}, },
+            },
+            wantErr: false,
+        },
 	}
 
 	for _, tt := range tests {
