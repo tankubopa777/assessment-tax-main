@@ -1,15 +1,15 @@
-//go:build development || admin
-
 package repository
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
+	"github.com/tankubopa777/assessment-tax/module/models"
 )
 
-func TestGetAdminSettings(t *testing.T) {
+func TestGetAdminSettingsSuccess(t *testing.T) {
     db, mock, err := sqlmock.New()
     if err != nil {
         t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -27,6 +27,22 @@ func TestGetAdminSettings(t *testing.T) {
     assert.NoError(t, err)
     assert.Equal(t, float64(50000), settings.PersonalDeduction)
     assert.Equal(t, float64(30000), settings.KReceiptLimit)
+}
+
+func TestGetAdminSettingsError(t *testing.T) {
+    db, mock, err := sqlmock.New()
+    if err != nil {
+        t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+    }
+    defer db.Close()
+
+    mock.ExpectQuery("SELECT personal_deduction, k_receipt_limit FROM admin_settings WHERE id = 1").
+        WillReturnError(errors.New("query error"))
+
+    repo := NewPostgresAdminRepository(db)
+    settings, err := repo.GetAdminSettings()
+    assert.Error(t, err)
+    assert.Equal(t, models.AdminSettings{}, settings)
 }
 
 func TestSetPersonalDeduction(t *testing.T) {
