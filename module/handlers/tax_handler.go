@@ -48,10 +48,10 @@ func (h *TaxHandler) UploadTaxCalculations(c echo.Context) error {
 	}
 	defer src.Close()
 
-	// Save the file to a temporary directory
+	
 	tempDir := "uploads"
 	if _, err := os.Stat(tempDir); os.IsNotExist(err) {
-		os.Mkdir(tempDir, 0755) // Make sure the directory exists
+		os.Mkdir(tempDir, 0755)
 	}
 
 	tempFilePath := filepath.Join(tempDir, fileHeader.Filename)
