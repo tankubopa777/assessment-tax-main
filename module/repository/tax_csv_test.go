@@ -6,11 +6,10 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/tankubopa777/assessment-tax/module/models"
-	"github.com/tankubopa777/assessment-tax/module/repository"
 )
 
 func TestTaxCalculationsFromCSV(t *testing.T) {
-	repo := repository.NewPostgresTaxRepository(nil)
+	repo := NewPostgresTaxRepository(nil)
 
 	tests := []struct {
 		name        string
