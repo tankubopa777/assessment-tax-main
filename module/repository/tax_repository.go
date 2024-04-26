@@ -206,7 +206,3 @@ func calculateTax(taxableIncome float64) float64 {
     }
     return (math.Round(totalTax* 1000)) / 1000
 }
-
-func (r *PostgresTaxRepository) UploadTaxCalculations (input models.TaxCalculationInput, result models.TaxCalculationResult) error {
-    return nil
-}
