@@ -94,7 +94,7 @@ func (r *PostgresTaxRepository) CalculateTax(input models.TaxCalculationInput) (
     if taxRefund != 0 {
         taxRefund = math.Round(taxRefund*1000) / 1000
         return models.TaxCalculationResult{
-            TaxRefund: (math.Round(taxRefund* 1000)) / 1000,
+            TaxRefund: taxRefund,
         }, nil
     }
 
