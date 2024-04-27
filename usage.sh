@@ -68,7 +68,7 @@ curl -X POST http://localhost:5050/tax/calculations \
 -H "Content-Type: application/json" \
 -d '{
   "totalIncome": 7555533.0,
-  "wht": 30000.0,
+  "wht": 3000000.0,
   "allowances": [
     {
       "allowanceType": "k-receipt",
