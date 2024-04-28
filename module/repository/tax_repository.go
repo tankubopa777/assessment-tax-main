@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"fmt"
 	"math"
 
 	"github.com/tankubopa777/assessment-tax/module/models"
@@ -27,6 +28,17 @@ func (r *PostgresTaxRepository) CalculateTax(input models.TaxCalculationInput) (
     var totalDeductions float64 = 60000
     var donationDeduction float64 = 0
     var kReceiptDeduction float64 = 0
+    var kReceiptLimit float64 = 0
+
+    err := r.db.QueryRow("SELECT personal_deduction FROM admin_settings WHERE id = 1").Scan(&totalDeductions)
+    if err != nil {
+        return models.TaxCalculationResult{}, fmt.Errorf("failed to fetch base deduction: %w", err)
+    }
+
+    err = r.db.QueryRow("SELECT k_receipt_limit FROM admin_settings WHERE id = 1").Scan(&kReceiptLimit)
+    if err != nil {
+        return models.TaxCalculationResult{}, fmt.Errorf("failed to fetch k-receipt limit: %w", err)
+    }
 
     for _, allowance := range input.Allowances {
         switch allowance.AllowanceType {
@@ -37,8 +49,8 @@ func (r *PostgresTaxRepository) CalculateTax(input models.TaxCalculationInput) (
             }
         case "k-receipt":
             kReceiptDeduction += allowance.Amount
-            if kReceiptDeduction > 50000 {
-                kReceiptDeduction = 50000
+            if kReceiptDeduction > kReceiptLimit {
+                kReceiptDeduction = kReceiptLimit
             }
         }
     }
@@ -82,7 +94,6 @@ func (r *PostgresTaxRepository) CalculateTax(input models.TaxCalculationInput) (
         }
         taxDetails[lastTaxedIndex].Tax = math.Round(adjustedTax * 1000) / 1000
     }
-    
 
     finalTax := totalTax - input.WHT   
     var taxRefund float64
@@ -91,16 +102,15 @@ func (r *PostgresTaxRepository) CalculateTax(input models.TaxCalculationInput) (
         finalTax = 0
     }
 
-    if taxRefund != 0 {
-        taxRefund = math.Round(taxRefund*1000) / 1000
+    if taxRefund > 0 {
         return models.TaxCalculationResult{
-            TaxRefund: taxRefund,
+            TaxRefund: math.Round(taxRefund * 1000) / 1000,
+        }, nil
+    } else {
+        return models.TaxCalculationResult{
+            Tax:             math.Round(finalTax * 1000) / 1000,
+            TaxRefund:       math.Round(taxRefund * 1000) / 1000,
+            TaxLevelDetails: taxDetails,
         }, nil
     }
-
-    return models.TaxCalculationResult{
-        Tax:             math.Round(finalTax * 1000) / 1000,
-        TaxLevelDetails: taxDetails,
-    }, nil
 }
-
