@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"testing"
 
-	"github.com/KKGo-Software-engineering/assessment-tax/module/models"
 	"github.com/stretchr/testify/assert"
+	"github.com/tankubopa777/assessment-tax/module/models"
 )
 
 func TestCalculateTax(t *testing.T) {

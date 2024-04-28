@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"math"
 
-	"github.com/KKGo-Software-engineering/assessment-tax/module/models"
+	"github.com/tankubopa777/assessment-tax/module/models"
 )
 
 type PostgresTaxRepository struct {
