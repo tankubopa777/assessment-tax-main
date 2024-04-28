@@ -54,7 +54,7 @@ func main() {
 	adminGroup.POST("/deductions/k-receipt-limit", adminHandler.SetKReceiptLimit) 
 
 	go func() {
-		if err := e.Start(":5050"); err != nil && err != http.ErrServerClosed {
+		if err := e.Start(":8080"); err != nil && err != http.ErrServerClosed {
 			e.Logger.Fatal("shutting down the server", err)
 		}
 	}()
