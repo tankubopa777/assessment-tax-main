@@ -23,11 +23,31 @@ func (r *PostgresTaxRepository) CalculateTax(input models.TaxCalculationInput) (
         {LowerBound: 2000000, UpperBound: -1, Rate: 0.35},
     }
 
-    var totalDeductions float64 = 60000 
+    var totalDeductions float64 = 60000  
+    var donationDeduction float64 = 0
+    var kReceiptDeduction float64 = 0
+
+    for _, allowance := range input.Allowances {
+        switch allowance.AllowanceType {
+        case "donation":
+            donationDeduction += allowance.Amount
+            if donationDeduction > 100000 {
+                donationDeduction = 100000
+            }
+        case "k-receipt":
+            kReceiptDeduction += allowance.Amount
+            if kReceiptDeduction > 50000 {
+                kReceiptDeduction = 50000
+            }
+        }
+    }
+
+    totalDeductions += donationDeduction + kReceiptDeduction
+
     taxableIncome := input.TotalIncome - totalDeductions
 
-    var totalTax float64
 
+    var totalTax float64
     for _, bracket := range taxBrackets {
         if taxableIncome > float64(bracket.LowerBound) {
             upperLimit := float64(bracket.UpperBound)
@@ -38,9 +58,10 @@ func (r *PostgresTaxRepository) CalculateTax(input models.TaxCalculationInput) (
             }
 
             incomeInBracket := upperLimit - float64(bracket.LowerBound)
-
-            taxForBracket := incomeInBracket * bracket.Rate
-            totalTax += taxForBracket
+            if incomeInBracket > 0 {
+                taxForBracket := incomeInBracket * bracket.Rate
+                totalTax += taxForBracket
+            }
         }
     }
 

@@ -2,7 +2,6 @@ package repository
 
 import (
 	"database/sql"
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -10,8 +9,9 @@ import (
 )
 
 func TestCalculateTax(t *testing.T) {
-	db := &sql.DB{}
+	db := &sql.DB{} 
 	repo := NewPostgresTaxRepository(db)
+
 
 	tests := []struct {
 		name       string
@@ -19,6 +19,23 @@ func TestCalculateTax(t *testing.T) {
 		wantResult models.TaxCalculationResult
 		wantErr    bool
 	}{
+		{
+			name: "Test Story 1",
+			input: models.TaxCalculationInput{
+				TotalIncome: 500000.0,
+				WHT:         0.0,
+				Allowances: []models.Allowance{
+					{
+						AllowanceType: "donation",
+						Amount:        0.0,
+					},
+				},
+			},
+			wantResult: models.TaxCalculationResult{
+				Tax:       29000.0,
+			},
+			wantErr: false,
+		},
 		{
 			name: "Test Story 1 : KBank want",
 			input: models.TaxCalculationInput{
@@ -98,14 +115,49 @@ func TestCalculateTax(t *testing.T) {
 			input: models.TaxCalculationInput{
 				TotalIncome: 500000.0,
 				WHT:         40000.0,
-				Allowances: []models.Allowance{},
+				Allowances: []models.Allowance{
+				
+				},
 			},
 			wantResult: models.TaxCalculationResult{
 				TaxRefund: 40000 - 29000, 
 			},
 			wantErr: false,
 		},
-		
+		{
+			name: "Test Case for donation allowance",
+			input: models.TaxCalculationInput{
+				TotalIncome: 500000.0,
+				WHT:         0.0,
+				Allowances: []models.Allowance{
+					{
+						AllowanceType: "donation",
+						Amount:        200000.0,
+					},
+				},
+			},
+			wantResult: models.TaxCalculationResult{
+				Tax:       19000,
+			},
+			wantErr: false,
+		},
+		{
+			name: "Test Case for k-receipt allowance",
+			input: models.TaxCalculationInput{
+				TotalIncome: 500000.0,
+				WHT:         0.0,
+				Allowances: []models.Allowance{
+					{
+						AllowanceType: "k-receipt",
+						Amount:        60000.0,
+					},
+				},
+			},
+			wantResult: models.TaxCalculationResult{
+				Tax:       24000,
+			},
+			wantErr: false,
+		},
 	}
 
 	for _, tt := range tests {
@@ -116,11 +168,6 @@ func TestCalculateTax(t *testing.T) {
 				return
 			}
 			assert.Equal(t, tt.wantResult.Tax, gotResult.Tax, "Calculated tax does not match expected tax")
-			if tt.wantErr {
-				fmt.Printf("%s: PASSED (expected error)\n", tt.name)
-			} else {
-				fmt.Printf("%s: PASSED (expected result)\n", tt.name)
-			}
 		})
 	}
 }
