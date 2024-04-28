@@ -1,5 +1,5 @@
 # Test for Kbank Tax Calculation API endpoint
-curl -X POST http://localhost:5050/tax/calculations \
+curl -X POST http://localhost:8080/tax/calculations \
 -H "Content-Type: application/json" \
 -d '{
   "totalIncome": 500000.0,
@@ -8,7 +8,7 @@ curl -X POST http://localhost:5050/tax/calculations \
 }'
 
 # Test for Kbank Tax Calculation API endpoint Request with WHT
-curl -X POST http://localhost:5050/tax/calculations \
+curl -X POST http://localhost:8080/tax/calculations \
 -H "Content-Type: application/json" \
 -d '{
   "totalIncome": 500000.0,
