@@ -7,6 +7,3 @@ import (
 type TaxRepository interface {
 	CalculateTax(input models.TaxCalculationInput) (models.TaxCalculationResult, error)
 }
-
-type AdminRepository interface {
-}

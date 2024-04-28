@@ -20,141 +20,267 @@ func TestCalculateTax(t *testing.T) {
 		wantErr    bool
 	}{
 		{
-			name: "Test Story 1",
-			input: models.TaxCalculationInput{
-				TotalIncome: 500000.0,
-				WHT:         0.0,
-				Allowances: []models.Allowance{
-					{
-						AllowanceType: "donation",
-						Amount:        0.0,
-					},
-				},
-			},
-			wantResult: models.TaxCalculationResult{
-				Tax:       29000.0,
-			},
-			wantErr: false,
-		},
-		{
-			name: "Test Story 1 : KBank want",
-			input: models.TaxCalculationInput{
-				TotalIncome: 500000.0,
-				WHT:         0.0,
-				Allowances: []models.Allowance{
-					{},
-				},
-			},
-			wantResult: models.TaxCalculationResult{
-				Tax:       29000,
-			},
-			wantErr: false,
-		},
-		{
-			name: "Test Story 1 : Tax level 0 - 150,000",
-			input: models.TaxCalculationInput{
-				TotalIncome: 15000.0,
-				WHT:         0.0,
-				Allowances: []models.Allowance{},
-			},
-			wantResult: models.TaxCalculationResult{
-				Tax:       0.0,
-			},
-			wantErr: false,
-		},
-		{
-			name: "Test Story 1 : Tax level 500,001-1,000,000",
+			name: "Test Kbank",
 			input: models.TaxCalculationInput{
 				TotalIncome: 660000.0,
 				WHT:         0.0,
-				Allowances: []models.Allowance{},
+				Allowances:  []models.Allowance{},
 			},
 			wantResult: models.TaxCalculationResult{
-				Tax:         50000, 
-			},
-			wantErr: false,
-		},
-		{
-			name: "Test Story 1 : Tax level 500,001-1,000,000",
-			input: models.TaxCalculationInput{
-				TotalIncome: 1000000.0,
-				WHT:         0.0,
-				Allowances: []models.Allowance{},
-			},
-			wantResult: models.TaxCalculationResult{
-				Tax:         101000, 
-			},
-			wantErr: false,
-		},
-		{
-			name: "Test Story 1 : Tax level 1,000,001-2,000,000",
-			input: models.TaxCalculationInput{
-				TotalIncome: 1500000.0,
-				WHT:         0.0,
-				Allowances: []models.Allowance{},
-			},
-			wantResult: models.TaxCalculationResult{
-				Tax:       198000,
-			},
-			wantErr: false,
-		},
-		{
-			name: "Test Story 1 : Tax level 2,000,001 and above",
-			input: models.TaxCalculationInput{
-				TotalIncome: 2500000.0,
-				WHT:         0.0,
-				Allowances: []models.Allowance{},
-			},
-			wantResult: models.TaxCalculationResult{
-				Tax:       464000,
-			},
-			wantErr: false,
-		},
-		{
-			name: "Test Story 1 : Tax Refund",
-			input: models.TaxCalculationInput{
-				TotalIncome: 500000.0,
-				WHT:         40000.0,
-				Allowances: []models.Allowance{
-				
+				Tax:       50000,
+				TaxLevelDetails: []models.TaxLevelDetail{
+					{
+						Level: "1-150000",
+						Tax:   0,
+					},
+					{
+						Level: "150001-500000",
+						Tax:   35000,
+					},
+					{
+						Level: "500001-1000000",
+						Tax:   15000,
+					},
+					{
+						Level: "1000001-2000000",
+						Tax:   0,
+					},
+					{
+						Level: "2000001 ขึ้นไป",
+						Tax:   0,
+					},
 				},
 			},
+			wantErr: false,
+		},
+		{
+			name: "Test for income 500000 with WHT 25000",
+			input: models.TaxCalculationInput{
+				TotalIncome: 500000.0,
+				WHT:         25000.0,
+				Allowances:  []models.Allowance{},
+			},
 			wantResult: models.TaxCalculationResult{
-				TaxRefund: 40000 - 29000, 
+				Tax:       4000,
+				TaxLevelDetails: []models.TaxLevelDetail{
+					{
+						Level: "1-150000",
+						Tax:   0,
+					},
+					{
+						Level: "150001-500000",
+						Tax:   4000,
+					},
+					{
+						Level: "500001-1000000",
+						Tax:   0,
+					},
+					{
+						Level: "1000001-2000000",
+						Tax:   0,
+					},
+					{
+						Level: "2000001 ขึ้นไป",
+						Tax:   0,
+					},
+				},
 			},
 			wantErr: false,
 		},
 		{
-			name: "Test Case for donation allowance",
+			name: "Test for income 660000",
 			input: models.TaxCalculationInput{
-				TotalIncome: 500000.0,
+				TotalIncome: 660000.0,
 				WHT:         0.0,
-				Allowances: []models.Allowance{
+				Allowances:  []models.Allowance{},
+			},
+			wantResult: models.TaxCalculationResult{
+				Tax:       50000,
+				TaxLevelDetails: []models.TaxLevelDetail{
+					{
+						Level: "1-150000",
+						Tax:   0,
+					},
+					{
+						Level: "150001-500000",
+						Tax:   35000,
+					},
+					{
+						Level: "500001-1000000",
+						Tax:   15000,
+					},
+					{
+						Level: "1000001-2000000",
+						Tax:   0,
+					},
+					{
+						Level: "2000001 ขึ้นไป",
+						Tax:   0,
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Test for income 500000 with WHT 30000",
+			input: models.TaxCalculationInput{
+				TotalIncome: 500000,
+				WHT:         30000.0,
+				Allowances:  []models.Allowance{},
+			},
+			wantResult: models.TaxCalculationResult{
+				Tax:       0,
+				TaxLevelDetails: []models.TaxLevelDetail{
+					{
+						Level: "1-150000",
+						Tax:   0,
+					},
+					{
+						Level: "150001-500000",
+						Tax:   0,
+					},
+					{
+						Level: "500001-1000000",
+						Tax:   0,
+					},
+					{
+						Level: "1000001-2000000",
+						Tax:   0,
+					},
+					{
+						Level: "2000001 ขึ้นไป",
+						Tax:   0,
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Test for income 500000 with donation 100000 and k-receipt 50000", 
+			input: models.TaxCalculationInput{
+				TotalIncome: 500000,
+				WHT:         0.0,
+				Allowances:  []models.Allowance{
 					{
 						AllowanceType: "donation",
-						Amount:        200000.0,
+						Amount:        100000,
+					},
+					{
+						AllowanceType: "k-receipt",
+						Amount:        50000,
 					},
 				},
 			},
 			wantResult: models.TaxCalculationResult{
-				Tax:       19000,
+				Tax:       14000,
+				TaxLevelDetails: []models.TaxLevelDetail{
+					{
+						Level: "1-150000",
+						Tax:   0,
+					},
+					{
+						Level: "150001-500000",
+						Tax:   14000,
+					},
+					{
+						Level: "500001-1000000",
+						Tax:   0,
+					},
+					{
+						Level: "1000001-2000000",
+						Tax:   0,
+					},
+					{
+						Level: "2000001 ขึ้นไป",
+						Tax:   0,
+					},
+				},
 			},
 			wantErr: false,
 		},
 		{
-			name: "Test Case for k-receipt allowance",
+			name: "Test for income 500000 with donation more than 100000 and k-receipt 50000", 
 			input: models.TaxCalculationInput{
-				TotalIncome: 500000.0,
+				TotalIncome: 500000,
 				WHT:         0.0,
-				Allowances: []models.Allowance{
+				Allowances:  []models.Allowance{
+					{
+						AllowanceType: "donation",
+						Amount:        1000000,
+					},
 					{
 						AllowanceType: "k-receipt",
-						Amount:        60000.0,
+						Amount:        50000,
 					},
 				},
 			},
 			wantResult: models.TaxCalculationResult{
-				Tax:       24000,
+				Tax:       14000,
+				TaxLevelDetails: []models.TaxLevelDetail{
+					{
+						Level: "1-150000",
+						Tax:   0,
+					},
+					{
+						Level: "150001-500000",
+						Tax:   14000,
+					},
+					{
+						Level: "500001-1000000",
+						Tax:   0,
+					},
+					{
+						Level: "1000001-2000000",
+						Tax:   0,
+					},
+					{
+						Level: "2000001 ขึ้นไป",
+						Tax:   0,
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Test for income 500000 with k-receipt more than 50000 and donation 100000", 
+			input: models.TaxCalculationInput{
+				TotalIncome: 500000,
+				WHT:         0.0,
+				Allowances:  []models.Allowance{
+					{
+						AllowanceType: "donation",
+						Amount:        100000,
+					},
+					{
+						AllowanceType: "k-receipt",
+						Amount:        500000,
+					},
+				},
+			},
+			wantResult: models.TaxCalculationResult{
+				Tax:       14000,
+				TaxLevelDetails: []models.TaxLevelDetail{
+					{
+						Level: "1-150000",
+						Tax:   0,
+					},
+					{
+						Level: "150001-500000",
+						Tax:   14000,
+					},
+					{
+						Level: "500001-1000000",
+						Tax:   0,
+					},
+					{
+						Level: "1000001-2000000",
+						Tax:   0,
+					},
+					{
+						Level: "2000001 ขึ้นไป",
+						Tax:   0,
+					},
+				},
 			},
 			wantErr: false,
 		},
@@ -168,6 +294,19 @@ func TestCalculateTax(t *testing.T) {
 				return
 			}
 			assert.Equal(t, tt.wantResult.Tax, gotResult.Tax, "Calculated tax does not match expected tax")
+			assert.Equal(t, tt.wantResult.Tax, gotResult.Tax, "Total calculated tax does not match expected tax")
+			assert.Equal(t, tt.wantResult.TaxRefund, gotResult.TaxRefund, "Tax refund does not match expected refund")
+
+			assert.Equal(t, len(tt.wantResult.TaxLevelDetails), len(gotResult.TaxLevelDetails), "Number of tax level details does not match")
+
+			for i, wantDetail := range tt.wantResult.TaxLevelDetails {
+    			if i < len(gotResult.TaxLevelDetails) { 
+        			gotDetail := gotResult.TaxLevelDetails[i]
+        			assert.Equal(t, wantDetail.Level, gotDetail.Level, "Tax level does not match at index", i)
+        			assert.Equal(t, wantDetail.Tax, gotDetail.Tax, "Tax amount does not match at level", wantDetail.Level)
+    			}
+			}
+
 		})
 	}
 }

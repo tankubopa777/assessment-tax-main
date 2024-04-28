@@ -40,13 +40,14 @@ func main() {
 
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, os.Interrupt, os.Kill)
+	
 	<-shutdown
-
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	if err := e.Shutdown(ctx); err != nil {
 		e.Logger.Fatal(err)
 	}
-	log.Println("shutting down the server")
+	log.Println("Shutting down the server...")
 }
