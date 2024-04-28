@@ -2,8 +2,12 @@ package repository
 
 import (
 	"database/sql"
+	"encoding/csv"
 	"fmt"
+	"io"
 	"math"
+	"os"
+	"strconv"
 
 	"github.com/tankubopa777/assessment-tax/module/models"
 )
@@ -114,3 +118,100 @@ func (r *PostgresTaxRepository) CalculateTax(input models.TaxCalculationInput) (
         }, nil
     }
 }
+
+
+func (r *PostgresTaxRepository) TaxCalculationsFromCSV(filePath string) ([]models.CSVTaxCalculationResult, error) {
+    file, err := os.Open(filePath)
+    if err != nil {
+        return nil, err
+    }
+    defer file.Close()
+
+    csvReader := csv.NewReader(file)
+    var results []models.CSVTaxCalculationResult
+
+    headers, err := csvReader.Read()
+    if err != nil {
+        return nil, err
+    }
+    if len(headers) < 3 || headers[0] != "totalIncome" || headers[1] != "wht" || headers[2] != "donation" {
+        return nil, fmt.Errorf("CSV format is incorrect, expected headers: 'totalIncome, wht, donation'")
+    }
+
+    for {
+        record, err := csvReader.Read()
+        if err == io.EOF {
+            break
+        }
+        if err != nil {
+            return nil, err
+        }
+
+        totalIncome, err := strconv.ParseFloat(record[0], 64)
+        if err != nil {
+            return nil, fmt.Errorf("error parsing totalIncome: %v", err)
+        }
+        wht, err := strconv.ParseFloat(record[1], 64)
+        if err != nil {
+            return nil, fmt.Errorf("error parsing wht: %v", err)
+        }
+        donation, err := strconv.ParseFloat(record[2], 64)
+        if err != nil {
+            return nil, fmt.Errorf("error parsing donation: %v", err)
+        }
+        
+        taxRefund := 0.0
+
+        taxableIncome := totalIncome - (60000 + donation) 
+        tax := calculateTax(taxableIncome) - wht
+
+        if tax < 0 {
+            taxRefund = -tax
+            tax = 0
+        }
+
+        if taxRefund > 0 {
+            results = append(results, models.CSVTaxCalculationResult{
+                TotalIncome: totalIncome,
+                TaxRefund:  taxRefund,
+            })
+        } else {
+        results = append(results, models.CSVTaxCalculationResult{
+            TotalIncome: totalIncome,
+            Tax:         tax,
+        })
+    }
+    }
+
+    return results, nil
+}
+
+
+func calculateTax(taxableIncome float64) float64 {
+	taxBrackets := []models.TaxBracket{
+        {LowerBound: 150000, UpperBound: 500000, Rate: 0.1},
+        {LowerBound: 500000, UpperBound: 1000000, Rate: 0.15},
+        {LowerBound: 1000000, UpperBound: 2000000, Rate: 0.2},
+        {LowerBound: 2000000, UpperBound: -1, Rate: 0.35},
+    }
+
+	var totalTax float64
+    for _, bracket := range taxBrackets {
+        if taxableIncome > float64(bracket.LowerBound) {
+            upperLimit := float64(bracket.UpperBound)
+            if bracket.UpperBound == -1 {
+                upperLimit = taxableIncome
+            } else if taxableIncome < upperLimit {
+                upperLimit = taxableIncome
+            }
+
+            incomeInBracket := upperLimit - float64(bracket.LowerBound)
+
+            taxForBracket := incomeInBracket * bracket.Rate
+            totalTax += taxForBracket
+        }
+    }
+    return (math.Round(totalTax* 1000)) / 1000
+}
+
+

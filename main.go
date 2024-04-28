@@ -30,29 +30,29 @@ func main() {
 	}
 	defer db.Close()
 
-	
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
-
 
 	adminAuthMiddleware := middleware.BasicAuth(func(username, password string, c echo.Context) (bool, error) {
 		return username == os.Getenv("ADMIN_USERNAME") && password == os.Getenv("ADMIN_PASSWORD"), nil
 	})
 
 	taxRepo := repository.NewPostgresTaxRepository(db)
-	taxHandler := handlers.NewTaxHandler(taxRepo)
-	adminRepo := repository.NewPostgresAdminRepository(db) 
-	adminHandler := handlers.NewAdminHandler(adminRepo)    
+    taxHandler := handlers.NewTaxHandler(taxRepo)
+    adminRepo := repository.NewPostgresAdminRepository(db) 
+    adminHandler := handlers.NewAdminHandler(adminRepo)    
 
-	e.POST("/tax/calculations", taxHandler.CalculateTax)
+    e.POST("/tax/calculations", taxHandler.CalculateTax)
+    e.POST("/tax/calculations/upload-csv", taxHandler.UploadTaxCalculations) 
 
 	adminGroup := e.Group("/admin")
 	adminGroup.Use(adminAuthMiddleware)
 
-	adminGroup.GET("/settings", adminHandler.GetAdminSettings) 
+	adminGroup.GET("/settings", adminHandler.GetAdminSettings)
 	adminGroup.POST("/deductions/personal", adminHandler.SetPersonalDeduction) 
 	adminGroup.POST("/deductions/k-receipt-limit", adminHandler.SetKReceiptLimit) 
-
+	
+	// Graceful shutdown
 	go func() {
 		if err := e.Start(":8080"); err != nil && err != http.ErrServerClosed {
 			e.Logger.Fatal("shutting down the server", err)

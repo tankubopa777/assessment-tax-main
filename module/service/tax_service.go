@@ -6,6 +6,7 @@ import (
 
 type TaxRepository interface {
 	CalculateTax(input models.TaxCalculationInput) (models.TaxCalculationResult, error)
+	TaxCalculationsFromCSV(file string) ([]models.CSVTaxCalculationResult, error)
 }
 
 type AdminRepository interface {

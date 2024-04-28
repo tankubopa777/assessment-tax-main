@@ -39,3 +39,12 @@ func (tb TaxBracket) String() string {
     return fmt.Sprintf("%d-%d", tb.LowerBound + 1, tb.UpperBound)
 }
 
+
+type CSVTaxCalculationResult struct {
+	TotalIncome float64 `json:"totalIncome"`
+	Tax         float64 `json:"tax,omitempty"`
+	TaxRefund       float64 `json:"taxRefund,omitempty"`   
+}
+
+
+

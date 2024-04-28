@@ -81,8 +81,8 @@ curl -X POST http://localhost:8080/tax/calculations \
 curl -X POST http://localhost:8080/tax/calculations \
 -H "Content-Type: application/json" \
 -d '{
-  "totalIncome": 60000.0,
-  "wht": 0.0,
+  "totalIncome": 9900000.0,
+  "wht": 25000.0,
   "allowances": [
     {
       "allowanceType": "donation",
@@ -108,30 +108,7 @@ curl -X POST http://localhost:8080/tax/calculations \
   ]
 }'
 
+curl -X POST http://localhost:8080/tax/calculations/upload-csv \
+     -F "taxFile=@tax.csv" \
+     -H "Content-Type: multipart/form-data"
 
-600000,40000,20000
-curl -X POST http://localhost:8080/tax/calculations \
--H "Content-Type: application/json" \
--d '{
-  "totalIncome": 600000.0,
-  "wht": 40000.0,
-  "allowances": [
-    {
-      "allowanceType": "donation",
-      "amount": 20000.0
-    }
-  ]
-}'
-
-curl -X POST http://localhost:8080/tax/calculations \
--H "Content-Type: application/json" \
--d '{
-  "totalIncome": 600000.0,
-  "wht": 0.0,
-  "allowances": [
-    {
-      "allowanceType": "donation",
-      "amount": 20000.0
-    }
-  ]
-}'
