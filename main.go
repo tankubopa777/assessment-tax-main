@@ -42,7 +42,7 @@ func main() {
 	signal.Notify(shutdown, os.Interrupt, os.Kill)
 	<-shutdown
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 
 	if err := e.Shutdown(ctx); err != nil {
