@@ -16,7 +16,7 @@ curl -X POST http://localhost:8080/tax/calculations \
   "allowances": [
     {
       "allowanceType": "k-receipt",
-      "amount": 50000.0 
+      "amount": 200000.0 
     },
     {
       "allowanceType": "donation",
@@ -68,7 +68,7 @@ curl -X POST http://localhost:8080/tax/calculations \
 -H "Content-Type: application/json" \
 -d '{
   "totalIncome": 7555533.0,
-  "wht": 30000.0,
+  "wht": 3000000.0,
   "allowances": [
     {
       "allowanceType": "k-receipt",
@@ -111,4 +111,3 @@ curl -X POST http://localhost:8080/tax/calculations \
 curl -X POST http://localhost:8080/tax/calculations/upload-csv \
      -F "taxFile=@tax.csv" \
      -H "Content-Type: multipart/form-data"
-

@@ -119,7 +119,6 @@ func (r *PostgresTaxRepository) CalculateTax(input models.TaxCalculationInput) (
     }
 }
 
-
 func (r *PostgresTaxRepository) TaxCalculationsFromCSV(filePath string) ([]models.CSVTaxCalculationResult, error) {
     file, err := os.Open(filePath)
     if err != nil {
@@ -213,5 +212,3 @@ func calculateTax(taxableIncome float64) float64 {
     }
     return (math.Round(totalTax* 1000)) / 1000
 }
-
-
