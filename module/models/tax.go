@@ -46,5 +46,3 @@ type CSVTaxCalculationResult struct {
 	TaxRefund       float64 `json:"taxRefund,omitempty"`   
 }
 
-
-
