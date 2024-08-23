@@ -1,0 +1,17 @@
+services:
+  sonar-scanner: 
+    container_name: sonar-scanner
+    platform: linux/amd64
+    image: sonarsource/sonar-scanner-cli
+    volumes:
+      - .:/usr/src
+    working_dir: /usr/src
+    command: >
+      sonar-scanner
+        -Dsonar.projectKey=test-go 
+        -Dsonar.sources=. 
+        -Dsonar.host.url=http://localhost:9000 
+        -Dsonar.token=${SONAR_TOKEN}
+    environment:
+      - SONAR_TOKEN
+    network_mode: "host"
